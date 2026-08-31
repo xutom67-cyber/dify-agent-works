@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>莫友路书 · 别赶路，去感受路</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <aside class="page-meta">
+    <div class="brand-mark">莫</div>
+    <h1>莫友路书</h1>
+    <p class="hashtag">#别赶路，去感受路</p>
+    <p>把「想去」变成「能去」。<br>输入一句需求，生成一份<b>每一站都能核实</b>的行程。<br>AI 旅行 Agent · 原型作品。</p>
+    <div class="badges">
+      <span class="badge b1">真实口碑</span>
+      <span class="badge b2">真实地点</span>
+    </div>
+    <p class="foot">数据来自高德 Web 服务真实抓取 · 可查证</p>
+  </aside>
+
+  <div class="phone">
+    <div class="island"></div>
+    <div class="statusbar"><span class="time">09:41</span><span class="notch-icons"><i></i><i></i></span></div>
+
+    <div class="screens" id="screens">
+
+      <!-- 屏1 开场 -->
+      <section class="screen s1 active" id="screen1">
+        <div class="hero" id="hero">
+          <img id="heroImg" class="hero-bg" alt="城市照片">
+          <div class="hero-scrim"></div>
+          <div class="hero-top">
+            <div class="brand"><span class="brand-dot"></span>莫友路书</div>
+            <div class="hero-tag" id="heroTag">上海 · 焦糖</div>
+          </div>
+          <div class="hero-txt">
+            <h2 id="heroTitle">梧桐叶落，才是上海最好的季节</h2>
+            <p id="heroSub">从武康路的转角，走到愚园路的黄昏</p>
+          </div>
+        </div>
+
+        <div class="s1-body">
+          <!-- 城市选择 -->
+          <div class="pre">去哪座城</div>
+          <div class="city-row" id="cityRow"></div>
+
+          <!-- 主题选择 -->
+          <div class="pre">想怎么玩</div>
+          <div class="theme-row" id="themeRow"></div>
+
+          <button class="btn" onclick="go('screen2')">开始规划</button>
+        </div>
+      </section>
+
+      <!-- 屏2 输入 -->
+      <section class="screen s2" id="screen2">
+        <header class="s-head">
+          <button class="back" onclick="go('screen1')">‹</button>
+          <div class="step-chip"><span id="s2City">上海</span> · 规划</div>
+        </header>
+        <h3>你想怎么走？</h3>
+        <div class="hint">描述得越具体，路线越贴你</div>
+
+        <div class="box" id="reqBox" contenteditable="true" data-ph="例：周末 2 人，喜欢建筑和咖啡，预算人均 400，想慢慢逛…"></div>
+
+        <div class="pre">偏好</div>
+        <div class="pre-tags" id="prefVibe"></div>
+
+        <div class="pre">或一键填入</div>
+        <div class="chips" id="chips"></div>
+
+        <div class="foot">
+          <button class="btn" onclick="startGen()" id="genBtn">生成我的路书 →</button>
+        </div>
+      </section>
+
+      <!-- 屏3 生成 -->
+      <section class="screen s3" id="screen3">
+        <header class="s-head"><div class="step-chip bright">AI 策划中…</div></header>
+        <div class="gen-title">正在为你实地确认</div>
+        <div class="gen-sub">不是拍脑袋，是查过再推荐</div>
+        <div class="prog"><i id="prog" style="width:0"></i></div>
+        <div class="steps" id="steps"></div>
+        <div class="log" id="log"></div>
+      </section>
+
+      <!-- 屏4 路书 -->
+      <section class="screen s4" id="screen4">
+        <header class="s-head">
+          <button class="back" onclick="go('screen1')">‹</button>
+          <div class="step-chip"><span id="s4City">上海</span> · 路书</div>
+          <div class="hd-share" onclick="toast('路书写好了，可分享给同行人')">分享 ↗</div>
+        </header>
+
+        <div class="trip-hd">
+          <div>
+            <div class="t" id="s4Title">上海 · 微醺建筑</div>
+            <div class="sub" id="s4Sub">周末 2 天 · 慢慢逛</div>
+          </div>
+          <div class="dl" onclick="toast('已导出路书，可收藏')">导出</div>
+        </div>
+
+        <div class="sum" id="sum"></div>
+
+        <!-- 视图切换 -->
+        <div class="view-tabs">
+          <button class="vtab active" id="vtab-map" onclick="switchView('map')"><span class="v-ic">◫</span>路线</button>
+          <button class="vtab" id="vtab-list" onclick="switchView('list')"><span class="v-ic">☰</span>行程</button>
+          <button class="vtab" id="vtab-social" onclick="switchView('social')"><span class="v-ic">◎</span>同路人</button>
+        </div>
+
+        <div class="view-pane" id="view-map">
+          <div class="map-holder big">
+            <div id="amap-big"></div>
+            <div class="overlay"><b>◫</b> 手绘路线 · 按天分色</div>
+          </div>
+          <div class="route-strip" id="routeStrip"></div>
+        </div>
+
+        <div class="view-pane hidden" id="view-list">
+          <div class="toggle">
+            <button class="seg active" data-filter="all" onclick="setFilter(this)">综合</button>
+            <button class="seg" data-filter="xhs" onclick="setFilter(this)">◎ 看口碑</button>
+            <button class="seg" data-filter="amap" onclick="setFilter(this)">⌖ 看地点</button>
+          </div>
+          <div class="map-holder">
+            <div id="amap"></div>
+            <div class="overlay"><b>◫</b> 路线速览</div>
+          </div>
+          <div id="days"></div>
+        </div>
+
+        <div class="view-pane hidden" id="view-social">
+          <div class="social-intro">
+            <span class="si-badge">◎</span>
+            <div>
+              <div class="si-t">同路人</div>
+              <div class="si-s">看看别人怎么走这条线 · 一起聊聊</div>
+            </div>
+          </div>
+          <div class="feed" id="feed"></div>
+        </div>
+        <div class="safe-bottom"></div>
+      </section>
+
+      <!-- 屏5 收尾 -->
+      <section class="screen s5" id="screen5">
+        <header class="s-head">
+          <button class="back" onclick="go('screen4')">‹</button>
+          <div class="step-chip">03 / 理念</div>
+        </header>
+        <div class="pain">为什么是「真源」？</div>
+        <div class="sub-p">市面上 AI 旅行产品最大的三个坑，莫友一一解决。</div>
+        <div id="pains"></div>
+
+        <div class="c-title">vs 同行</div>
+        <div class="compare" id="compare"></div>
+
+        <div class="cta">
+          <button class="btn" onclick="toast('数据集含高德真实抓取 · 可查证')">查看数据集 ↗</button>
+        </div>
+        <div class="safe-bottom"></div>
+      </section>
+
+    </div>
+
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
