@@ -9,6 +9,44 @@ let currentTheme = 0;  // 主题索引
 
 function getCity() { return M.cities[currentCity]; }
 
+/* ---------- 真实地图投影（Web Mercator，WGS84 → 像素/瓦片） ---------- */
+const MAP_ZOOM = 15;               // 街道级
+const MAP_TILE = 256;              // 瓦片边长 px
+let currentBase = 'sat';           // 底图层：sat=卫星 / street=街道
+function projXY(lng, lat, z = MAP_ZOOM) {
+  const n = Math.pow(2, z);
+  const px = (lng + 180) / 360 * n * MAP_TILE;
+  const latRad = lat * Math.PI / 180;
+  const py = (1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2 * n * MAP_TILE;
+  return { px, py };
+}
+function tileOf(px, py) { return { tx: Math.floor(px / MAP_TILE), ty: Math.floor(py / MAP_TILE) }; }
+
+/* Esri 卫星图瓦片（真实影像，无需 key，国内可达） */
+function esriTileUrl(tx, ty, z = MAP_ZOOM) {
+  return `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${ty}/${tx}`;
+}
+/* 高德街道图瓦片（可选底图） */
+function amapTileUrl(tx, ty, z = MAP_ZOOM) {
+  return `https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x=${tx}&y=${ty}&z=${z}`;
+}
+
+/* 取当前城市所有 POI 投影，返回 worldpx 范围 + 每个点 -->
+   供瓦片底图定位与路线绘制 */
+function projectCity(z = MAP_ZOOM) {
+  const spots = [];
+  getCity().days.forEach((day, di) => day.spots.forEach((sp, i) => {
+    if (sp.lng && sp.lat) spots.push({ sp, di, i });
+  }));
+  const proj = spots.map(a => ({ ...a, ...projXY(+a.sp.lng, +a.sp.lat, z) }));
+  if (!proj.length) return null;
+  const minPx = Math.min(...proj.map(p => p.px)), maxPx = Math.max(...proj.map(p => p.px));
+  const minPy = Math.min(...proj.map(p => p.py)), maxPy = Math.max(...proj.map(p => p.py));
+  const minTx = Math.floor(minPx / MAP_TILE), maxTx = Math.floor(maxPx / MAP_TILE);
+  const minTy = Math.floor(minPy / MAP_TILE), maxTy = Math.floor(maxPy / MAP_TILE);
+  return { proj, minPx, maxPx, minPy, maxPy, minTx, maxTx, minTy, maxTy };
+}
+
 /* ---------- 多屏切换 ---------- */
 function go(id, delay = 0) {
   setTimeout(() => {
@@ -18,109 +56,126 @@ function go(id, delay = 0) {
   }, delay);
 }
 
-/* ---------- 屏1：城市选择 + 主题选择 + 开屏联动 ---------- */
+/* ---------- 侧边栏：当前所在（城市已定位驱动） ---------- */
 function buildCitySelector() {
-  const row = document.getElementById('cityRow');
-  row.innerHTML = '';
-  M.cities.forEach((c, i) => {
-    const chip = document.createElement('button');
-    chip.className = 'city-chip' + (i === currentCity ? ' on' : '');
-    chip.innerHTML = `<span class="cn">${c.name}</span><span class="cw">${c.colorName} · ${c.theme.split('·')[0].trim()}</span><div class="c-dot" style="background:${i === currentCity ? c.color : '#d8cdbd'}"></div>`;
-    chip.onclick = () => {
-      currentCity = i;
-      // 更新城市选中态
-      document.querySelectorAll('.city-chip').forEach((x, xi) => {
-        x.classList.toggle('on', xi === i);
-        const dot = x.querySelector('.c-dot');
-        if (dot) dot.style.background = xi === i ? c.color : '#d8cdbd';
-        const cw = x.querySelector('.cw');
-        if (cw) cw.style.color = xi === i ? c.color : '';
-      });
-      applyCityTheme();
-      buildPrefs();
-    };
-    row.appendChild(chip);
-  });
+  const el = document.getElementById('drLocName');
+  if (el) el.textContent = getCity().name;
 }
 
 function buildThemeSelector() {
-  const row = document.getElementById('themeRow');
+  const row = document.getElementById('drThemeRow');
+  if (!row) return;
   row.innerHTML = '';
   M.themes.forEach((t, i) => {
     const chip = document.createElement('button');
-    chip.className = 'theme-chip' + (i === currentTheme ? ' on' : '');
+    chip.className = 'dr-theme' + (i === currentTheme ? ' on' : '');
     chip.innerHTML = `<span class="ic">${t.icon}</span>${t.name}`;
     chip.onclick = () => {
       currentTheme = i;
-      document.querySelectorAll('.theme-chip').forEach((x, xi) => x.classList.toggle('on', xi === i));
+      document.querySelectorAll('.dr-theme').forEach((x, xi) => x.classList.toggle('on', xi === i));
+      applyCityTheme();
     };
     row.appendChild(chip);
   });
 }
 
-/* 城市×主题 → 开屏文案联动 */
+const PET_LINES = {
+  shanghai: "下一站，我陪你去武康路出片。",
+  beijing:  "南锣鼓巷的喧闹，我替你走一趟。",
+  chengdu:  "公园里的竹椅，等你去坐一下午。",
+};
+
+/* 城市×主题 → 主页诗 + 宠物台词 + 城市摄影背景 + 屏2/4 联动 */
 function applyCityTheme() {
   const c = getCity();
-  document.getElementById('heroTitle').textContent = c.heroText;
-  document.getElementById('heroSub').textContent = c.heroSub;
-  document.getElementById('heroTag').textContent = `${c.name} · ${c.colorName}`;
+  const pLine = document.getElementById('poemLine');
+  if (pLine) pLine.textContent = c.prose || c.heroText;
+  const petLine = document.getElementById('petLine');
+  if (petLine) petLine.textContent = PET_LINES[c.id] || c.heroSub;
+  const drLoc = document.getElementById('drLocName');
+  if (drLoc) drLoc.textContent = c.name;
   document.getElementById('s2City').textContent = c.name;
   document.getElementById('s4City').textContent = c.name;
-  const img = document.getElementById('heroImg');
-  img.src = c.heroImg;
-  // 主题名显示在 s4 标题
   const t = M.themes[currentTheme];
   document.getElementById('s4Title').textContent = `${c.name} · ${t.name}`;
   document.getElementById('s4Sub').textContent = t.tag + ' · ' + c.theme;
-  // 重设 render 缓存
+  renderCityHero();
   resetRendered();
 }
 
-/* ---------- 屏1 头图（单图，随城市切换） ---------- */
-function heroImg() {
-  const img = document.getElementById('heroImg');
-  if (img) { img.style.opacity = 0; setTimeout(() => { img.src = getCity().heroImg; img.style.opacity = 1; }, 60); }
+/* 开屏城市摄影背景（真实城市摄影，代表文脉 + 文化色叠加） */
+function renderCityHero() {
+  const holder = document.getElementById('cityHero');
+  if (!holder) return;
+  const c = getCity();
+  holder.style.backgroundImage = `url("${c.heroImg}")`;
+  holder.style.setProperty('--city', c.color);
+  const cap = document.getElementById('cityHeroCap');
+  if (cap) cap.textContent = `${c.name} · ${c.colorName}`;
 }
 
-/* ---------- 屏2 偏好选择 ---------- */
-function buildPrefs() {
-  const box = document.getElementById('reqBox');
-  box.textContent = '';
-  const prefVibe = document.getElementById('prefVibe');
-  const chipsEl = document.getElementById('chips');
-  prefVibe.innerHTML = '';
-  chipsEl.innerHTML = '';
-  // 每个城市有自己的偏好词
-  getCity().prefs.forEach(tag => {
-    const el = document.createElement('button');
-    el.className = 'ptag';
-    el.dataset.val = tag;
-    el.textContent = tag;
-    el.onclick = () => {
-      el.classList.toggle('on');
-      const tags = [...el.parentNode.querySelectorAll('.on')].map(x => x.dataset.val);
-      if (tags.length) box.textContent = appendReq(box.textContent, tags);
-    };
-    prefVibe.appendChild(el);
+/* 按实时定位自动定城市（演示：读取真实高德坐标；getUserMedia 定位实际由原生负责，
+   这里用城市经纬度就近匹配，模拟"打开时定位"效果） */
+function detectCityByLocation(lng, lat) {
+  if (lng == null || lat == null) return; // 无定位 → 保持默认（上海）
+  let best = 0, bd = Infinity;
+  M.cities.forEach((c, i) => {
+    const [clng, clat] = c.geo;
+    const d = (lng - clng) ** 2 + (lat - clat) ** 2;
+    if (d < bd) { bd = d; best = i; }
   });
-  // 示例 chips（随城市）
-  const cityName = getCity().name;
-  const EXAMPLES = [
-    { t: `${cityName} · 慢慢逛`, v: `${cityName}周末，2 人，喜欢建筑和咖啡，预算人均400，想慢慢逛` },
-    { t: `${cityName} · 本地味`, v: `${cityName} 2天，逛当地街区，吃本地人吃的，不赶行程` },
-    { t: `${cityName} · 深度一点`, v: `${cityName}周末，想走一条能讲出故事的路，慢慢来` },
+  if (bd < 4) { currentCity = best; applyCityTheme(); }
+}
+
+/* ---------- 侧边栏开关 ---------- */
+function openDrawer() { document.getElementById('drawer').classList.add('open'); }
+function closeDrawer() { document.getElementById('drawer').classList.remove('open'); }
+
+/* 历史路书（侧边栏） */
+function buildHistory() {
+  const el = document.getElementById('drHist');
+  if (!el) return;
+  const hist = [
+    { city: "上海", title: "梧桐 · 微醺建筑", when: "9 月 1 日" },
+    { city: "北京", title: "红墙 · 胡同深处", when: "8 月 24 日" },
+    { city: "成都", title: "盖碗 · 慢半天", when: "8 月 12 日" },
   ];
-  EXAMPLES.forEach(ex => {
-    const c = document.createElement('button');
-    c.className = 'chip';
-    c.textContent = ex.t;
-    c.onclick = () => {
-      document.querySelectorAll('.chip').forEach(x => x.classList.remove('used'));
-      c.classList.add('used');
-      document.getElementById('reqBox').textContent = ex.v;
-    };
-    chipsEl.appendChild(c);
-  });
+  el.innerHTML = hist.map(h => `
+    <button class="dr-hist-item" onclick="openHistory('${h.city}')">
+      <span class="dh-dot"></span>
+      <span class="dh-t">${h.title}</span>
+      <span class="dh-w">${h.when}</span>
+    </button>`).join('');
+}
+function openHistory(city) {
+  const idx = M.cities.findIndex(c => c.name === city);
+  if (idx >= 0) { currentCity = idx; applyCityTheme(); }
+  closeDrawer();
+  go('screen4');
+}
+
+/* ---------- 主页输入 ---------- */
+function homeSend() {
+  const box = document.getElementById('homeInput');
+  const v = (box.textContent || '').trim();
+  if (!v) { wakeAI(); return; }
+  box.textContent = '';
+  // 用主页输入直接进对话引导
+  wakeAI();
+  setTimeout(() => {
+    const inp = document.getElementById('aiInput');
+    if (inp) { inp.value = v; sendAI(); }
+  }, 700);
+}
+
+/* ---------- 主页宠物（大） ---------- */
+function heroImg() { /* 主页改用宠物，不再用城市头图 */ }
+
+/* ---------- 屏2 偏好选择 ---------- */
+/* ---------- 屏2：静态偏好已移除（AI 对话驱动需求） ---------- */
+function buildPrefs() {
+  // 需求改由 AI 动态引导生成（见 wakeAI / aiAskStep）
+  // 这里保留空实现，避免切城市时调用出错。
 }
 function appendReq(base, tags) {
   const b = (base || '').trim().replace(/：$/, '').replace(/[。，,]\\s*$/, '');
@@ -140,7 +195,7 @@ function startGen() {
   M.genSteps.forEach((st, i) => {
     const d = document.createElement('div');
     d.className = 'step';
-    d.innerHTML = `<div class="state">${i + 1}</div><div><div class="st-t">${st.t}</div><div class="st-s">${st.s}</div></div>`;
+    d.innerHTML = `<div class="state">${i + 1}</div><div><div class="st-t">${st.t}${st.tool ? `<span class="st-tool">${st.tool}</span>` : ''}</div><div class="st-s">${st.s}</div></div>`;
     stepsEl.appendChild(d);
   });
   const nodes = stepsEl.children;
@@ -228,6 +283,7 @@ function renderTrip() {
           ${ hasImg ? `<img src="${sp.img}" alt="${sp.name}" onerror="this.parentNode.innerHTML='<div class=&quot;noimg&quot;><span>${sp.name}</span><span style=&quot;font-size:11px;opacity:.85&quot;>暂无照片</span></div>'">`
                     : `<div class="noimg"><span>${sp.name}</span><span style="font-size:11px;opacity:.85">暂无照片</span></div>`}
           <div class="num-badge">${sp.order}</div>
+          ${sp.photo ? `<div class="photo-badge${sp.photoBest ? ' best' : ''}" title="最佳摄影">📷</div>` : ''}
           <div class="time-badge">${sp.time}</div>
           <div class="grade">${sp.rating}</div>
         </div>
@@ -244,6 +300,7 @@ function renderTrip() {
         <button class="expand-btn" onclick="toggleSpot(this)">查看 <b>为什么推荐它</b> ▾</button>
         <div class="bd">
           ${sp.koubei ? `<div class="ev"><div class="e-ic xhs">◎</div><div><div class="e-t xhs">真源口碑</div><div class="e-b">${sp.koubei}<span class="src">${sp.src}</span></div></div></div>` : ''}
+          ${sp.photo ? `<div class="ev"><div class="e-ic photo">📷</div><div><div class="e-t photo">最佳摄影<span class="src">${sp.photoBest ? '· 本线最佳机位' : '· 机位提示'}</span></div><div class="e-b">${sp.photo}</div></div></div>` : ''}
           <div class="ev"><div class="e-ic amap">⌖</div><div><div class="e-t amap">真源地点</div><div class="e-b">营业 ${sp.open}${sp.phone ? ' · 电话 ' + sp.phone : ''}<span class="src">来源：高德 POI 真实抓取</span></div></div></div>
           ${sp.arb ? `<div class="arb">${sp.arb}</div>` : ''}
         </div>`;
@@ -313,7 +370,7 @@ function renderRouteStrip() {
   const all = [];
   days.forEach((day, di) => day.spots.forEach(sp => all.push({ sp, di })));
   // 每天一条路线（d0=焦糖, d1=苔绿）
-  const dayColors = ['#b5651d', '#6a8f5a'];
+  const dayColors = ['#c03a2b', '#6a8f5a'];
   const html = days.map((day, di) => {
     const stage = all.filter(x => x.di === di);
     const dots = stage.map((x, i) => `
@@ -455,97 +512,107 @@ function addCmt(inp) {
 }
 
 /* ============================================================
-   手绘 SVG 路书图（替代高德 JS 地图 —— 稳定、文艺、永不空白）
-   把每个城市的真实经纬度投影到米白纸底，画品牌色手绘路线 + 墨色序号点 + 衬线地名。
+   真实底图（Esri 卫星瓦片）+ 规划好的行进路线
+   用真实经纬度投影定位 POI，画起点/终点/分段路线/编号徽章。
    ============================================================ */
 function renderRouteSVG(containerId, opts = {}) {
   const el = document.getElementById(containerId);
   if (!el) return;
-  const days = getCity().days;
-  // 收集所有点（带 day 索引）
-  const all = [];
-  days.forEach((day, di) => day.spots.forEach((sp, i) => {
-    if (sp.lng && sp.lat) all.push({ sp, di, i });
-  }));
-  if (!all.length) { el.innerHTML = '<div style="padding:40px;text-align:center;color:var(--ink-faint);font-size:12px">暂无路线数据</div>'; return; }
+  const data = projectCity(MAP_ZOOM);
+  if (!data) { el.innerHTML = '<div style="padding:40px;text-align:center;color:var(--ink-faint);font-size:12px">暂无路线数据</div>'; return; }
+  const { proj, minTx, maxTx, minTy, maxTy } = data;
 
-  // 归一化到 viewBox 0 0 W H，留出 padding
-  const W = opts.w || 360, H = opts.h || 250;
-  const pad = opts.pad || 34;
-  const lngs = all.map(a => +a.sp.lng), lats = all.map(a => +a.sp.lat);
-  const minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
-  const minLat = Math.min(...lats), maxLat = Math.max(...lats);
-  const spanLng = (maxLng - minLng) || 0.001, spanLat = (maxLat - minLat) || 0.001;
-  const x = lng => pad + (lng - minLng) / spanLng * (W - pad * 2);
-  const y = lat => pad + (maxLat - lat) / spanLat * (H - pad * 2);
+  const W = opts.w || 380, H = opts.h || 260;
 
-  const dayColors = ['#b5651d', '#6a8f5a'];
+  // 瓦片网格：列 tx∈[minTx..maxTx]，行 ty∈[minTy..maxTy]
+  const cols = maxTx - minTx + 1, rows = maxTy - minTy + 1;
+  const mapW = cols * 256, mapH = rows * 256;
 
-  // 生成手绘感路线 path（用二次贝塞尔连接相邻点，带小幅抖动）
-  function pathFor(pts) {
-    if (pts.length < 2) return '';
-    let d = `M ${pts[0].x} ${pts[0].y}`;
-    for (let i = 1; i < pts.length; i++) {
-      const p = pts[i - 1], q = pts[i];
-      const mx = (p.x + q.x) / 2, my = (p.y + q.y) / 2;
-      // 轻微垂直偏移制造「手绘」感
+  // POI 相对瓦片网格左上角的世界像素偏移
+  const originPx = minTx * 256, originPy = minTy * 256;
+  const pts = proj.map(a => ({ ...a, dx: a.px - originPx, dy: a.py - originPy }));
+
+  // 底图瓦片 divs（当前底图层：sat=Esri 卫星 / street=高德街道）
+  let tilesHtml = '';
+  for (let ty = minTy; ty <= maxTy; ty++) {
+    for (let tx = minTx; tx <= maxTx; tx++) {
+      const left = (tx - minTx) * 256, top = (ty - minTy) * 256;
+      const url = (currentBase === 'street') ? amapTileUrl(tx, ty) : esriTileUrl(tx, ty);
+      tilesHtml += `<div class="map-tile" style="left:${left}px;top:${top}px;background-image:url('${url}')"></div>`;
+    }
+  }
+
+  // 路线：按 day 分色，用真实像素贝塞尔连相邻点；起点绿、终点旗
+  const dayColors = ['#c03a2b', '#6a8f5a'];
+  const byDay = {};
+  pts.forEach(a => { (byDay[a.di] = byDay[a.di] || []).push(a); });
+  function pathFor(pts2) {
+    if (pts2.length < 2) return '';
+    let d = `M ${pts2[0].dx} ${pts2[0].dy}`;
+    for (let i = 1; i < pts2.length; i++) {
+      const p = pts2[i - 1], q = pts2[i];
+      const mx = (p.dx + q.dx) / 2, my = (p.dy + q.dy) / 2;
       const bump = ((i * 7) % 5) - 2;
-      d += ` Q ${mx} ${my + bump} ${q.x} ${q.y}`;
+      d += ` Q ${mx} ${my + bump} ${q.dx} ${q.dy}`;
     }
     return d;
   }
-
-  // 每一点投影
-  const proj = all.map(a => ({ ...a, px: x(+a.sp.lng), py: y(+a.sp.lat) }));
-  const byDay = {};
-  proj.forEach(a => { (byDay[a.di] = byDay[a.di] || []).push(a); });
-
-  let spotsSvg = '';
-  // 先画所有天的路线
   let linesSvg = '';
   Object.keys(byDay).forEach(di => {
-    const pts = byDay[di];
-    if (pts.length > 1) linesSvg += `<path d="${pathFor(pts)}" fill="none" stroke="${dayColors[di]}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="1 0" opacity=".55"/>`;
+    const pp = byDay[di];
+    if (pp.length > 1) linesSvg += `<path d="${pathFor(pp)}" fill="none" stroke="${dayColors[di]}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" opacity=".85" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))"/>`;
   });
 
-  // 再画每一点（序号圆 + 衬线地名）
-  proj.forEach(a => {
+  // POI 徽章（带白描边，卫星图上可读）+ 起点/终点特殊标记 + 摄影机位标记
+  let spotsSvg = '';
+  pts.forEach(a => {
     const c = dayColors[a.di];
     const start = a.i === 0;
+    const last = a.i === byDay[a.di].length - 1;
+    const isPhoto = !!(a.sp.photo);
+    const isBest = !!(a.sp.photoBest);
+    let ring = '';
+    // 起/终点：绿色起点旗 / 红色终点旗 + 醒目圆环
+    if (start) ring = `<circle r="18" fill="none" stroke="#27a35a" stroke-width="2.5" opacity=".9"/><circle r="24" fill="none" stroke="#27a35a" stroke-width="1.2" opacity=".5"/>`;
+    if (last) ring = `<circle r="18" fill="none" stroke="#c03a2b" stroke-width="2.5" opacity=".9"/><circle r="24" fill="none" stroke="#c03a2b" stroke-width="1.2" opacity=".5"/>`;
+    // 名字放徽章上方（白字 + 深色描边，卫星图上清晰）
+    let name = a.sp.name;
+    if (name.length > 6) name = name.slice(0, 5) + '…';
+    // 摄影机位：在徽章右上角加相机圆标 + 机位提示（最佳摄影点更醒目）
+    let photoMark = '';
+    if (isPhoto) {
+      const markBg = isBest ? '#c03a2b' : '#8a5a33';
+      photoMark = `
+        <g transform="translate(12,-12)">
+          <circle r="8" fill="${markBg}" stroke="#fff" stroke-width="1.8" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))"/>
+          <text y="1.2" text-anchor="middle" fill="#fff" font-size="8" font-weight="700">📷</text>
+        </g>`;
+    }
     spotsSvg += `
-      <g class="mspot" data-id="${a.sp.id}" transform="translate(${a.px},${a.py})" style="cursor:pointer">
-        <circle r="${start ? 15 : 13}" fill="${c}" stroke="#fff" stroke-width="2.5" style="filter:drop-shadow(0 2px 3px rgba(90,60,20,.28))"/>
-        <text y="4.5" text-anchor="middle" fill="#fff" font-size="${start ? 13 : 12}" font-weight="700">${a.i + 1}</text>
-        <text y="-20" text-anchor="middle" fill="#2b1d12" font-size="10.5" font-weight="600" style="font-family:var(--serif);letter-spacing:.02em">${a.sp.name}</text>
+      <g class="mspot" data-id="${a.sp.id}" transform="translate(${a.dx},${a.dy})" style="cursor:pointer">
+        ${ring}
+        <circle r="13" fill="${c}" stroke="#fff" stroke-width="2.5" style="filter:drop-shadow(0 1px 3px rgba(0,0,0,.5))"/>
+        <text y="1" text-anchor="middle" fill="#fff" font-size="12" font-weight="700" style="font-family:var(--serif)">${a.i + 1}</text>
+        <text y="-20" text-anchor="middle" fill="#fff" font-size="11" font-weight="700" style="font-family:var(--serif);letter-spacing:.03em;paint-order:stroke;stroke:rgba(20,20,18,.65);stroke-width:3">${name}</text>
+        ${photoMark}
       </g>`;
   });
 
-  // 纸底 + 环境点（文艺噪点）
-  const paperDots = Array.from({ length: 24 }, (_, i) => {
-    const rx = (i * 37 + 11) % W, ry = (i * 53 + 7) % H;
-    return `<circle cx="${rx}" cy="${ry}" r="1.1" fill="#c9b489" opacity=".16"/>`;
-  }).join('');
-
   el.innerHTML = `
-  <svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
-    <defs>
-      <filter id="grain_${containerId.replace(/\W/g,'')}" x="0" y="0" width="100%" height="100%">
-        <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" result="n"/>
-        <feColorMatrix in="n" type="saturate" values="0"/>
-        <feComponentTransfer><feFuncA type="table" tableValues="0 0.04"/></feComponentTransfer>
-      </filter>
-    </defs>
-    <rect width="${W}" height="${H}" fill="#f7f0e2"/>
-    ${paperDots}
-    <rect width="${W}" height="${H}" filter="url(#grain_${containerId.replace(/\W/g,'')})" opacity=".5"/>
-    <rect width="${W}" height="${H}" fill="none" stroke="#e2d4bc" stroke-width="1" rx="14"/>
-    ${linesSvg}
-    ${spotsSvg}
-  </svg>`;
+  <div class="tile-map" style="width:${mapW}px;height:${mapH}px">
+    <div class="tile-layer">${tilesHtml}</div>
+    <svg viewBox="0 0 ${mapW} ${mapH}" width="${mapW}" height="${mapH}" class="route-overlay" style="position:absolute;inset:0">
+      ${linesSvg}
+      ${spotsSvg}
+    </svg>
+  </div>`;
 
   // 点击序号 → 打开对应卡片（滚动到列表并展开）
   el.querySelectorAll('.mspot').forEach(g => {
-    g.addEventListener('click', () => {
+    g.addEventListener('click', (e) => {
+      // 若刚拖拽过则不触发点击
+      if (el._dragged) return;
+      e.preventDefault();
       const id = g.dataset.id;
       const card = document.querySelector(`.spot[data-id="${id}"]`);
       if (card) {
@@ -554,12 +621,170 @@ function renderRouteSVG(containerId, opts = {}) {
       }
     });
   });
+
+  // 初始化可缩放可拖拽视图
+  initPanZoom(el, W, H, pts, mapW, mapH);
 }
 
-/* ---------- 列表视图：小 SVG ---------- */
-function renderListMap() { renderRouteSVG('amap', { w: 360, h: 210, pad: 32 }); }
-/* ---------- 路线视图：大 SVG ---------- */
-function renderBigMap() { renderRouteSVG('amap-big', { w: 380, h: 260, pad: 34 }); }
+/* ============================================================
+   地图交互：拖拽平移 + 缩放（中心点模型）
+   view = { tx, ty, scale } 应用到 .tile-map 的 translate(tx,ty) scale(s)
+   以视口中心为变换原点（CSS transform-origin: center center）
+   ============================================================ */
+let _mapView = null;
+
+function initPanZoom(el, viewW, viewH, pts, mapW, mapH) {
+  // 计算 POI 包围盒与缩放初始值
+  const minX = Math.min(...pts.map(p => p.dx)), maxX = Math.max(...pts.map(p => p.dx));
+  const minY = Math.min(...pts.map(p => p.dy)), maxY = Math.max(...pts.map(p => p.dy));
+  const cxp = (minX + maxX) / 2, cyp = (minY + maxY) / 2;
+  const baseScale = Math.min(viewW / (maxX - minX + 90), viewH / (maxY - minY + 110)) * 1.05;
+  const minScale = baseScale * 0.85, maxScale = baseScale * 4.6;
+
+  const tm = el.querySelector('.tile-map');
+  const overlay = el.querySelector('.route-overlay');
+  const v = { tx: viewW / 2 - cxp * baseScale, ty: viewH / 2 - cyp * baseScale, scale: baseScale };
+  el._view = v;
+  el._baseScale = baseScale;
+  el._minScale = minScale; el._maxScale = maxScale;
+  el._mapW = mapW; el._mapH = mapH; el._viewW = viewW; el._viewH = viewH;
+  el._dragged = false;
+
+  const maxTx = 0, maxTy = 0;               // 地图原点(0,0)缩放后的偏移上限
+  // 限定：地图填充视口，不露白（拖不出边界）
+  function clampTx(scale) {
+    const scaledW = mapW * scale;           // 缩放后地图宽
+    if (scaledW <= viewW) return viewW / 2 - scaledW / 2;   // 比视口窄 → 居中
+    return Math.min(0, viewW - scaledW) ? Math.min(0, viewW - scaledW) : 0;   // 右缘 <= 视口右缘
+  }
+  function clampTy(scale) {
+    const scaledH = mapH * scale;
+    if (scaledH <= viewH) return viewH / 2 - scaledH / 2;
+    return viewH - scaledH <= 0 ? Math.min(0, viewH - scaledH) : 0;
+  }
+
+  function apply() {
+    tm.style.transformOrigin = 'center center';
+    tm.style.transform = `translate(${v.tx}px, ${v.ty}px) scale(${v.scale})`;
+    // POI 徽章反向缩放：放大时徽章保持相对视口大小（乘积≈1）
+    if (overlay) overlay.style.transform = `scale(${1 / v.scale})`;
+    overlay.style.transformOrigin = '0 0';
+  }
+  el._apply = apply;
+  apply();
+
+  // —— 拖拽平移（pointer，带边界 clamp）——
+  let drag = null;
+  el.addEventListener('pointerdown', (e) => {
+    if (e.target.closest('.map-toggle') || e.target.closest('.map-zoom')) return;
+    drag = { x: e.clientX, y: e.clientY, tx: v.tx, ty: v.ty, moved: false };
+    el._dragged = false;
+    el.setPointerCapture && el.setPointerCapture(e.pointerId);
+  });
+  el.addEventListener('pointermove', (e) => {
+    if (!drag) return;
+    const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+    if (Math.abs(dx) + Math.abs(dy) > 5) drag.moved = true;
+    // clamp 到边界
+    const rawX = drag.tx + dx, rawY = drag.ty + dy;
+    const c1 = clampTx(v.scale), c2 = clampTy(v.scale);
+    v.tx = Math.min(0, Math.max(c1, rawX));
+    v.ty = Math.min(0, Math.max(c2, rawY));
+    // 若地图 <= 视口则锁定居中
+    if (mapW * v.scale <= viewW) v.tx = (viewW - mapW * v.scale) / 2;
+    if (mapH * v.scale <= viewH) v.ty = (viewH - mapH * v.scale) / 2;
+    el._dragged = drag.moved;
+    apply();
+  });
+  const endDrag = (e) => {
+    if (drag && drag.moved) el._dragged = true;
+    drag = null;
+  };
+  el.addEventListener('pointerup', endDrag);
+  el.addEventListener('pointercancel', endDrag);
+  el.addEventListener('pointerleave', endDrag);
+
+  // —— 滚轮缩放（桌面，以指针为锚点）——
+  el.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const factor = e.deltaY < 0 ? 1.18 : 0.85;
+    zoomAt(el, v, e.clientX, e.clientY, factor);
+  }, { passive: false });
+
+  // —— 双指捏合缩放（触屏）——
+  let pinch = null;
+  el.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 2) {
+      pinch = { d: dist(e.touches), cx: (e.touches[0].clientX + e.touches[1].clientX) / 2, cy: (e.touches[0].clientY + e.touches[1].clientY) / 2 };
+    }
+  }, { passive: true });
+  el.addEventListener('touchmove', (e) => {
+    if (pinch && e.touches.length === 2) {
+      e.preventDefault();
+      const nd = dist(e.touches);
+      const factor = nd / pinch.d;
+      const cx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+      zoomAt(el, v, cx, pinch.cy, factor);
+      pinch.d = nd;
+    }
+  }, { passive: false });
+  el.addEventListener('touchend', () => { pinch = null; }, { passive: true });
+
+  // —— 双击放大（以点击点为锚）——
+  let lastTap = 0;
+  el.addEventListener('dblclick', (e) => {
+    if (e.target.closest('.map-toggle') || e.target.closest('.map-zoom')) return;
+    zoomAt(el, v, e.clientX, e.clientY, 1.6);
+  });
+
+  function dist(t) { const a = t[0], b = t[1]; return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY); }
+
+  // 暴露给缩放按钮
+  el._zoom = (factor) => { const r = el.getBoundingClientRect(); zoomAt(el, v, r.left + r.width / 2, r.top + r.height / 2, factor); };
+  el._reset = () => {
+    v.scale = baseScale;
+    v.tx = viewW / 2 - cxp * baseScale; v.ty = viewH / 2 - cyp * baseScale;
+    // clamp 边界
+    const c1 = clampTx(v.scale), c2 = clampTy(v.scale);
+    v.tx = Math.min(0, Math.max(c1, v.tx)); v.ty = Math.min(0, Math.max(c2, v.ty));
+    if (mapW * v.scale <= viewW) v.tx = (viewW - mapW * v.scale) / 2;
+    if (mapH * v.scale <= viewH) v.ty = (viewH - mapH * v.scale) / 2;
+    el._dragged = false; apply();
+  };
+}
+
+// 以屏幕上 (cx,cy) 为锚点缩放（带边界 clamp）
+function zoomAt(el, v, cx, cy, factor) {
+  const newScale = Math.min(el._maxScale, Math.max(el._minScale, v.scale * factor));
+  const r = el.getBoundingClientRect();
+  const ox = cx - r.left, oy = cy - r.top;
+  const wx = (ox - v.tx) / v.scale, wy = (oy - v.ty) / v.scale;
+  v.scale = newScale;
+  v.tx = ox - wx * newScale;
+  v.ty = oy - wy * newScale;
+  el._apply();
+}
+
+/* ---------- 列表视图：小地图 ---------- */
+function renderListMap() { renderRouteSVG('amap', { w: 360, h: 210 }); }
+/* ---------- 路线视图：大地图 ---------- */
+function renderBigMap() { renderRouteSVG('amap-big', { w: 400, h: 300 }); }
+
+/* ---------- 底图切换（卫星 / 街道） ---------- */
+function setBase(base, btn) {
+  currentBase = base;
+  const box = document.getElementById('baseToggle');
+  if (box) box.querySelectorAll('button').forEach(b => b.classList.toggle('on', b === btn));
+  renderBigMap();
+}
+
+/* ---------- 地图缩放按钮（＋/－/复位） ---------- */
+function mapZoomBtn(dir) {
+  const el = document.getElementById('amap-big');
+  if (!el || !el._zoom) return;
+  if (dir === 0) { el._reset(); return; }
+  el._zoom(dir > 0 ? 1.3 : 0.77);
+}
 
 /* ---------- toast ---------- */
 let toastTimer = null;
@@ -600,14 +825,380 @@ function resetRendered() {
   if (window.__bigLines) { window.__bigLines.forEach(l => l.setMap && l.setMap(null)); window.__bigLines = []; }
 }
 
+/* ============================================================
+   AI 大脑 —— 唤醒 · 多轮意图引导 · Tools 调用
+   ============================================================ */
+/* ============ AI 大脑 —— 动态引导引擎 ============
+   AI 根据已选 tag 动态决定下一轮问什么、出哪些候选。
+   已选 step 实时拼成「需求句」，逐步收敛才进生成。 */
+let aiStepIdx = 0;
+let aiSelected = {};       // key -> [tagId,...]（多选兴趣）
+let aiTypingTimer = null;
+
+function wakeAI() {
+  document.getElementById('aiOverlay').classList.remove('hidden');
+  openPetPreview();
+  const chat = document.getElementById('aiChat');
+  chat.innerHTML = '';
+  aiStepIdx = 0;
+  aiSelected = {};
+  renderReqBar();
+  aiSay(`嘿，我是小莫。想去哪走走？`);
+  setTimeout(() => aiAskStep(0), 650);
+  document.getElementById('aiState').textContent = '正在听你说…';
+}
+
+function closeAI() {
+  document.getElementById('aiOverlay').classList.add('hidden');
+}
+
+/* 让小莫说一句话（typewriter） */
+function petBigHtml() {
+  const big = document.getElementById('petSvgBig');
+  return big ? `<svg viewBox="0 0 120 120" width="100%" height="100%">${big.innerHTML}</svg>` : '';
+}
+
+function aiSay(text, done) {
+  const chat = document.getElementById('aiChat');
+  const b = document.createElement('div');
+  b.className = 'msg ai';
+  b.innerHTML = `<div class="m-ava">${petBigHtml()}</div><div class="m-body"><div class="bubble"></div></div>`;
+  chat.appendChild(b);
+  const av = b.querySelector('.m-ava');
+  if (av) av.innerHTML = petBigHtml();
+  const bubble = b.querySelector('.bubble');
+  let i = 0;
+  bubble.textContent = '';
+  const cursor = document.createElement('span');
+  cursor.className = 'cursor';
+  bubble.appendChild(cursor);
+  clearInterval(aiTypingTimer);
+  aiTypingTimer = setInterval(() => {
+    bubble.insertBefore(document.createTextNode(text[i]), cursor);
+    i++;
+    chat.scrollTop = chat.scrollHeight;
+    if (i >= text.length) {
+      clearInterval(aiTypingTimer);
+      cursor.remove();
+      if (done) done();
+    }
+  }, 22);
+}
+
+/* 顶部「已确认」需求句 —— 实时更新 */
+function renderReqBar() {
+  const bar = document.getElementById('aiReqBar');
+  if (!bar) return;
+  const parts = [getCity().name];
+  M.guide.steps.forEach(step => {
+    const sel = aiSelected[step.key];
+    if (sel && sel.length) {
+      const labels = sel.map(id => (step.tags.find(t => t.id === id) || { label: id }).label)
+        .map(l => l.replace(/^[^\u4e00-\u9fa5A-Za-z]+/, ''));
+      parts.push(labels.join(' · '));
+    }
+  });
+  bar.textContent = '📋 ' + parts.filter(Boolean).join(' · ');
+}
+
+/* AI 提问某一步骤（动态出 tag） */
+function aiAskStep(idx) {
+  const chat = document.getElementById('aiChat');
+  const step = M.guide.steps[idx];
+  if (!step) { finishGuide(); return; }
+  aiStepIdx = idx;
+
+  const b = document.createElement('div');
+  b.className = 'msg ai';
+  b.innerHTML = `<div class="m-ava">${petBigHtml()}</div><div class="m-body"><div class="bubble q">${step.q}</div></div>`;
+  chat.appendChild(b);
+  const av = b.querySelector('.m-ava');
+  if (av) av.innerHTML = petBigHtml();
+  const body = b.querySelector('.m-body');
+
+  const opts = document.createElement('div');
+  opts.className = 'ai-opts' + (step.multiple ? ' multi' : '');
+  const chosen = aiSelected[step.key] || [];
+  step.tags.forEach(t => {
+    const c = document.createElement('button');
+    c.className = 'ai-opt' + (chosen.includes(t.id) ? ' on' : '');
+    c.textContent = t.label;
+    c.dataset.id = t.id;
+    c.onclick = () => {
+      if (step.multiple) {
+        const set = aiSelected[step.key] = (aiSelected[step.key] || []).slice();
+        const i = set.indexOf(t.id);
+        if (i >= 0) set.splice(i, 1); else set.push(t.id);
+        c.classList.toggle('on');
+        renderReqBar();
+        const doneBtn = chat.querySelector('.ai-step-done');
+        if (doneBtn) doneBtn.classList.add('visible');
+      } else {
+        userBubble(t.label);
+        aiSelected[step.key] = [t.id];
+        optionsInactive(opts);
+        renderReqBar();
+        aiSay(step.follow, () => setTimeout(() => aiAskStep(idx + 1), 250));
+      }
+    };
+    opts.appendChild(c);
+  });
+
+  if (step.multiple) {
+    const done = document.createElement('button');
+    done.className = 'ai-step-done';
+    done.textContent = '✓ 就这些，下一步';
+    done.onclick = () => {
+      if (!(aiSelected[step.key] || []).length) { toast('选一个以上更准哦'); return; }
+      userBubble((aiSelected[step.key] || []).map(id => (step.tags.find(t => t.id === id) || { label: id }).label.replace(/^[^\u4e00-\u9fa5A-Za-z0-9]+/, '')).join('、'));
+      optionsInactive(opts);
+      renderReqBar();
+      aiSay(step.follow, () => setTimeout(() => aiAskStep(idx + 1), 250));
+    };
+    opts.appendChild(done);
+  }
+
+  body.appendChild(opts);
+  chat.appendChild(b);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function userBubble(text) {
+  const chat = document.getElementById('aiChat');
+  const ub = document.createElement('div');
+  ub.className = 'msg user';
+  ub.innerHTML = `<div class="bubble">${text}</div>`;
+  chat.appendChild(ub);
+  chat.scrollTop = chat.scrollHeight;
+}
+function optionsInactive(opts) { opts.remove(); }
+
+/* 引导完成 → 写需求框 → 跳屏2 */
+function finishGuide() {
+  buildReqFromAnswered();
+  closeAI();
+  go('screen2');
+}
+
+function sendAI() {
+  const inp = document.getElementById('aiInput');
+  const v = (inp.value || '').trim();
+  if (!v) return;
+  inp.value = '';
+  userBubble(v);
+  aiSay('收到，我记下来了。', () => {
+    const step = M.guide.steps[aiStepIdx];
+    aiSelected[step.key] = aiSelected[step.key] || [];
+    setTimeout(() => aiAskStep(aiStepIdx + 1), 250);
+    renderReqBar();
+  });
+}
+
+/* 把澄清结果写进需求框 */
+function buildReqFromAnswered() {
+  const card = document.getElementById('reqCard');
+  const ident = document.getElementById('ident');
+  const clean = (l) => l.replace(/^[^\u4e00-\u9fa5A-Za-z0-9]+/, '');
+  const labelOf = (key, id) => {
+    const step = M.guide.steps.find(s => s.key === key);
+    if (!step) return id;
+    const t = step.tags.find(x => x.id === id);
+    return clean((t ? t.label : id));
+  };
+  const parts = [getCity().name];
+  ['pace', 'party', 'interest'].forEach(key => {
+    const sel = aiSelected[key];
+    if (sel && sel.length) parts.push(sel.map(id => labelOf(key, id)).join('、'));
+  });
+  const reqTxt = parts.filter(Boolean).join(' · ');
+  if (card) card.textContent = reqTxt;
+
+  // 已识别 chips：把已选 tag 都展示出来
+  if (ident) {
+    ident.innerHTML = '';
+    ['pace', 'party', 'interest'].forEach(key => {
+      const step = M.guide.steps.find(s => s.key === key);
+      const sel = aiSelected[key];
+      if (sel && step) sel.forEach(id => {
+        const t = step.tags.find(x => x.id === id);
+        if (!t) return;
+        const d = document.createElement('span');
+        d.className = 'ident-chip';
+        d.innerHTML = `<b>${t.note || ''}</b>`;
+        d.setAttribute('data-label', clean(t.label));
+        ident.appendChild(d);
+      });
+    });
+  }
+}
+
+/* ============================================================
+   宠物系统 —— 自定义形象（SVG）
+   ============================================================ */
+let petState = { type: 'mochi', color: 'amber', accent: 'scarf' };
+
+function openPet() {
+  document.getElementById('petOverlay').classList.remove('hidden');
+  renderPetCfg();
+  renderPetSvg();
+}
+function closePet() {
+  document.getElementById('petOverlay').classList.add('hidden');
+  syncPetFab();
+}
+function openPetPreview() { renderPetSvg(); }
+
+function renderPetCfg() {
+  const tRow = document.getElementById('petTypeRow');
+  const cRow = document.getElementById('petColorRow');
+  const aRow = document.getElementById('petAccentRow');
+  tRow.innerHTML = ''; cRow.innerHTML = ''; aRow.innerHTML = '';
+  M.pet.types.forEach(t => {
+    const b = document.createElement('button');
+    b.className = 'pc-opt' + (petState.type === t.id ? ' on' : '');
+    b.textContent = t.label;
+    b.onclick = () => { petState.type = t.id; renderPetCfg(); renderPetSvg(); syncPetFab(); };
+    tRow.appendChild(b);
+  });
+  M.pet.colors.forEach(c => {
+    const b = document.createElement('button');
+    b.className = 'pc-opt sw' + (petState.color === c.id ? ' on' : '');
+    b.style.background = c.hex;
+    b.title = c.label;
+    b.onclick = () => { petState.color = c.id; renderPetCfg(); renderPetSvg(); syncPetFab(); };
+    cRow.appendChild(b);
+  });
+  M.pet.accents.forEach(a => {
+    const b = document.createElement('button');
+    b.className = 'pc-opt' + (petState.accent === a.id ? ' on' : '');
+    b.textContent = a.glyph + ' ' + a.label;
+    b.onclick = () => { petState.accent = a.id; renderPetCfg(); renderPetSvg(); syncPetFab(); };
+    aRow.appendChild(b);
+  });
+}
+
+function petHex() { return (M.pet.colors.find(c => c.id === petState.color) || M.pet.colors[0]).hex; }
+
+function renderPetSvg() {
+  const svg = document.getElementById('petSvg');
+  if (!svg) return;
+  const col = petHex();
+  const accent = M.pet.accents.find(a => a.id === petState.accent);
+  let body = '';
+  const dk = '#1a1a1a';
+  if (petState.type === 'fox') { // 坐姿猫（默认）
+    body = `<path d="M42 48 L50 28 L56 44 Z" fill="${col}"/><path d="M78 48 L70 28 L64 44 Z" fill="${col}"/>
+      <ellipse cx="60" cy="42" rx="16" ry="14" fill="${col}"/>
+      <path d="M60 28 L66 40 L54 40 Z" fill="rgba(0,0,0,.08)"/>
+      <circle cx="54" cy="42" r="2.8" fill="${dk}"/><circle cx="66" cy="42" r="2.8" fill="${dk}"/>
+      <path d="M50 74 L46 82 L54 79 Z" fill="${col}"/><ellipse cx="52" cy="80" rx="2.6" ry="3" fill="${dk}"/>
+      <path d="M70 74 L74 82 L66 79 Z" fill="${col}"/><ellipse cx="68" cy="80" rx="2.6" ry="3" fill="${dk}"/>
+      <path d="M60 46 q3 4 0 7" stroke="${dk}" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M43 55 Q60 70 77 55" stroke="${col}" stroke-width="3.2" fill="none" stroke-linecap="round"/>`;
+  } else if (petState.type === 'star') { // 立姿猫
+    body = `<ellipse cx="60" cy="50" rx="19" ry="17" fill="${col}"/>
+      <path d="M44 38 L40 22 L50 32 Z" fill="${col}"/><path d="M76 38 L80 22 L70 32 Z" fill="${col}"/>
+      <circle cx="53" cy="49" r="3" fill="${dk}"/><circle cx="67" cy="49" r="3" fill="${dk}"/>
+      <path d="M59 54 q1 3 2 0" stroke="${dk}" stroke-width="1.8" fill="none"/>
+      <path d="M47 62 L45 58 M73 62 L75 58" stroke="${dk}" stroke-width="1.4" stroke-linecap="round"/>
+      <ellipse cx="60" cy="82" rx="18" ry="13" fill="${col}"/>
+      <ellipse cx="60" cy="90" rx="10" ry="4" fill="rgba(0,0,0,.06)"/>`;
+  } else { // 团子猫（蜷缩）
+    body = `<ellipse cx="60" cy="64" rx="28" ry="24" fill="${col}"/>
+      <ellipse cx="60" cy="80" rx="20" ry="9" fill="rgba(0,0,0,.07)"/>
+      <circle cx="44" cy="58" r="3" fill="${dk}"/><circle cx="62" cy="56" r="3" fill="${dk}"/>
+      <path d="M49 63 q4 3 8 0" stroke="${dk}" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M46 42 L42 30 L52 40 Z" fill="${col}"/><path d="M68 42 L72 30 L62 40 Z" fill="${col}"/>
+      <path d="M44 71 q8 6 18 4" stroke="${col}" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".6"/>
+      <ellipse cx="40" cy="66" rx="4" ry="2.6" fill="#e8b8b0" opacity=".55"/><ellipse cx="78" cy="62" rx="4" ry="2.6" fill="#e8b8b0" opacity=".55"/>`;
+  }
+  let accentSvg = '';
+  if (accent && accent.id === 'scarf') accentSvg = `<path d="M42 74 q18 10 36 0 l-3 8 q-15 8 -30 0 Z" fill="${accent.hex || '#e08a6d'}"/>`;
+  else if (accent && accent.id === 'cap') accentSvg = `<path d="M38 52 a22 16 0 0 1 44 0 Z" fill="${accent.hex || '#e08a6d'}"/><circle cx="60" cy="48" r="3" fill="${accent.hex || '#e08a6d'}"/>`;
+  else if (accent && accent.id === 'dot') accentSvg = `<ellipse cx="40" cy="70" rx="5" ry="3.2" fill="#ff9d8a" opacity=".75"/><ellipse cx="80" cy="70" rx="5" ry="3.2" fill="#ff9d8a" opacity=".75"/>`;
+  svg.innerHTML = `<g>${body}${accentSvg}</g>`;
+  // 同步到大主页宠物
+  const big = document.getElementById('petSvgBig');
+  if (big) big.innerHTML = `<g>${body}${accentSvg}</g>`;
+}
+function syncPetFab() {
+  const svg = document.getElementById('petSvg');
+  const wrap = (html) => `<svg viewBox="0 0 120 120" width="100%" height="100%">${html}</svg>`;
+  const fab = document.getElementById('petFace');
+  if (fab && svg) fab.innerHTML = wrap(svg.innerHTML);
+  const avatar = document.getElementById('aiAvatar');
+  if (avatar && svg) avatar.innerHTML = wrap(svg.innerHTML);
+  const big = document.getElementById('petSvgBig');
+  if (big) { const wrapBig = (html) => `<svg viewBox="0 0 120 120" width="100%" height="100%">${html}</svg>`; big.innerHTML = wrapBig(svg.innerHTML); }
+}
+
+/* ============================================================
+   硬件唤醒 —— 电源键长按（物理按键），语音「嘿 小莫」
+   注：背部轻敲为 iPhone 系统手势，Web 原型无法真实触达手机背面，
+   故在唤醒提示里如实质为硬件方式；demo 内用电源键长按模拟。
+   ============================================================ */
+function bindHardware() {
+  const power = document.getElementById('hwPower');
+  const hint = document.getElementById('hwHint');
+  if (!power) return;
+  let holdTimer = null;
+  const HOLD = 1000;   // 长按 1 秒
+
+  function start(e) {
+    e.preventDefault();
+    power.classList.add('lit');
+    // 长按进度提示
+    if (hint) {
+      hint.textContent = '';
+      hint.style.display = 'block';
+    }
+    const startT = Date.now();
+    holdTimer = setInterval(() => {
+      if (Date.now() - startT >= HOLD) {
+        clearInterval(holdTimer);
+        end(e);
+        wakeAI();
+      }
+    }, 60);
+  }
+  function end(e) {
+    if (e) e.preventDefault();
+    clearInterval(holdTimer);
+    holdTimer = null;
+    power.classList.remove('lit');
+    if (hint) hint.style.display = 'none';
+  }
+  power.addEventListener('mousedown', start);
+  power.addEventListener('touchstart', start, { passive: false });
+  power.addEventListener('mouseup', end);
+  power.addEventListener('mouseleave', end);
+  power.addEventListener('touchend', end);
+
+  // 音量键 → 提示（演示）
+  const vol = (id, msg) => { const el = document.getElementById(id); if (el) el.addEventListener('click', () => toast(msg)); };
+  vol('hwVolUp', '音量 +（演示）');
+  vol('hwVolDown', '音量 −（演示）');
+}
+
 /* ---------- init ---------- */
 (function init() {
   buildCitySelector();
   buildThemeSelector();
+  buildHistory();
   applyCityTheme();
-  buildPrefs();
   renderPains();
   heroImg();
-  const box = document.getElementById('reqBox');
-  box.addEventListener('input', () => { box.dataset.built = '1'; });
+  renderPetSvg();
+  syncPetFab();
+  bindHardware();
+  // 打开时按实时定位定城市（演示：这里模拟浏览器 geolocation）
+  try {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => detectCityByLocation(pos.coords.longitude, pos.coords.latitude),
+        () => {/* 拒绝定位 → 保持默认上海 */},
+        { timeout: 3000 }
+      );
+    }
+  } catch (e) {}
 })();

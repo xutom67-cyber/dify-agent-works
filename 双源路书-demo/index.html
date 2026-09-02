@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>莫友路书 · 别赶路，去感受路</title>
+<title>莫友路书 · 嘿 小莫</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -14,7 +14,7 @@
     <div class="brand-mark">莫</div>
     <h1>莫友路书</h1>
     <p class="hashtag">#别赶路，去感受路</p>
-    <p>把「想去」变成「能去」。<br>输入一句需求，生成一份<b>每一站都能核实</b>的行程。<br>AI 旅行 Agent · 原型作品。</p>
+    <p>让 <b>小莫</b>，这只看过整座城市的旅伴，替你走出一条值得的路。<br>它查真实口碑，也替你看街景、算时间，把「想去」变成「能去」。</p>
     <div class="badges">
       <span class="badge b1">真实口碑</span>
       <span class="badge b2">真实地点</span>
@@ -26,63 +26,96 @@
     <div class="island"></div>
     <div class="statusbar"><span class="time">09:41</span><span class="notch-icons"><i></i><i></i></span></div>
 
-    <div class="screens" id="screens">
+    <!-- 硬件：侧边物理按键（长按唤醒小莫） -->
+    <button class="hw power" id="hwPower" aria-label="电源键 长按唤醒"></button>
+    <button class="hw vol-up" id="hwVolUp" aria-label="音量键"></button>
+    <button class="hw vol-down" id="hwVolDown" aria-label="音量键"></button>
+    <div class="hw-hint" id="hwHint"></div>
 
-      <!-- 屏1 开场 -->
-      <section class="screen s1 active" id="screen1">
-        <div class="hero" id="hero">
-          <img id="heroImg" class="hero-bg" alt="城市照片">
-          <div class="hero-scrim"></div>
-          <div class="hero-top">
-            <div class="brand"><span class="brand-dot"></span>莫友路书</div>
-            <div class="hero-tag" id="heroTag">上海 · 焦糖</div>
-          </div>
-          <div class="hero-txt">
-            <h2 id="heroTitle">梧桐叶落，才是上海最好的季节</h2>
-            <p id="heroSub">从武康路的转角，走到愚园路的黄昏</p>
+    <!-- 侧边栏（用户信息 / 城市 / 主题 / 历史路书） -->
+    <div class="drawer" id="drawer">
+      <div class="drawer-scrim" onclick="closeDrawer()"></div>
+      <div class="drawer-panel">
+        <div class="dr-user">
+          <div class="dr-avatar">✧</div>
+          <div>
+            <div class="dr-name">沈听澜</div>
+            <div class="dr-sub">走遍城市的旅人</div>
           </div>
         </div>
+        <div class="dr-sec">当前所在</div>
+        <div class="dr-loc" id="drLoc"><span class="dlc-dot"></span><span id="drLocName">上海</span></div>
+        <div class="dr-sec">主题</div>
+        <div class="dr-themes" id="drThemeRow"></div>
+        <div class="dr-sec">历史路书</div>
+        <div class="dr-hist" id="drHist"></div>
+        <div class="dr-foot">数据真实可查证 · 莫友路书</div>
+      </div>
+    </div>
 
-        <div class="s1-body">
-          <!-- 城市选择 -->
-          <div class="pre">去哪座城</div>
-          <div class="city-row" id="cityRow"></div>
+    <div class="screens" id="screens">
 
-          <!-- 主题选择 -->
-          <div class="pre">想怎么玩</div>
-          <div class="theme-row" id="themeRow"></div>
+      <!-- 屏1 开场（城市摄影 + 宠物猫 + 诗句 + 输入/唤醒） -->
+      <section class="screen s1 active" id="screen1">
+        <div class="city-hero" id="cityHero">
+          <div class="city-hero-scrim"></div>
+          <div class="city-hero-top">
+            <div class="city-hero-cap" id="cityHeroCap">上海 · 焦糖</div>
+          </div>
+        </div>
+        <button class="menu-btn" onclick="openDrawer()" aria-label="菜单">☰</button>
+        <div class="s1-inner">
+          <div class="pet-hero" id="petHero" onclick="openPet()">
+            <div class="pet-stage-big">
+              <svg viewBox="0 0 120 120" id="petSvgBig" width="150" height="150"></svg>
+            </div>
+            <div class="pet-caption">小莫 <span class="pet-line" id="petLine">下一站，你说了算</span></div>
+          </div>
 
-          <button class="btn" onclick="go('screen2')">开始规划</button>
+          <p class="poem-line" id="poemLine">梧桐叶落，才算见过上海的秋。</p>
+
+          <div class="s1-input">
+            <div class="s1-box" id="homeInput" contenteditable="true" data-ph="告诉我，你想去哪儿走走…"></div>
+            <div class="s1-actions">
+              <button class="s1-btn voice" onclick="wakeAI()"><span class="ic">🎤</span> 唤起小莫</button>
+              <button class="s1-btn send" onclick="homeSend()">↵</button>
+            </div>
+          </div>
+          <div class="s1-hint">也可以长按右侧电源键唤醒</div>
         </div>
       </section>
 
-      <!-- 屏2 输入 -->
+      <!-- 屏2 确认需求 -->
       <section class="screen s2" id="screen2">
         <header class="s-head">
           <button class="back" onclick="go('screen1')">‹</button>
-          <div class="step-chip"><span id="s2City">上海</span> · 规划</div>
+          <div class="step-chip"><span id="s2City">上海</span> · 小莫已懂你</div>
+          <button class="hd-share" onclick="wakeAI()">💬 重新跟小莫说</button>
         </header>
-        <h3>你想怎么走？</h3>
-        <div class="hint">描述得越具体，路线越贴你</div>
 
-        <div class="box" id="reqBox" contenteditable="true" data-ph="例：周末 2 人，喜欢建筑和咖啡，预算人均 400，想慢慢逛…"></div>
+        <div class="confirm-hd">
+          <div class="ch-icon">💡</div>
+          <div>
+            <div class="ch-title">小莫听懂你要的了</div>
+            <div class="ch-sub">确认无误就生成；想改，直接告诉小莫</div>
+          </div>
+        </div>
 
-        <div class="pre">偏好</div>
-        <div class="pre-tags" id="prefVibe"></div>
+        <div class="req-card" id="reqCard"></div>
 
-        <div class="pre">或一键填入</div>
-        <div class="chips" id="chips"></div>
+        <div class="pre">已为你识别</div>
+        <div class="ident" id="ident"></div>
 
         <div class="foot">
           <button class="btn" onclick="startGen()" id="genBtn">生成我的路书 →</button>
         </div>
       </section>
 
-      <!-- 屏3 生成 -->
+      <!-- 屏3 生成（AI 调用 Tools）-->
       <section class="screen s3" id="screen3">
-        <header class="s-head"><div class="step-chip bright">AI 策划中…</div></header>
-        <div class="gen-title">正在为你实地确认</div>
-        <div class="gen-sub">不是拍脑袋，是查过再推荐</div>
+        <header class="s-head"><div class="step-chip bright">AI 大脑调用中…</div></header>
+        <div class="gen-title">小莫正在查，别急</div>
+        <div class="gen-sub">不是拍脑袋，是调多个工具查过再推荐</div>
         <div class="prog"><i id="prog" style="width:0"></i></div>
         <div class="steps" id="steps"></div>
         <div class="log" id="log"></div>
@@ -105,8 +138,8 @@
         </div>
 
         <div class="sum" id="sum"></div>
+        <div class="ai-strip" onclick="wakeAI()"><span class="as-ic">🎤</span> 想改？直接跟小莫说</div>
 
-        <!-- 视图切换 -->
         <div class="view-tabs">
           <button class="vtab active" id="vtab-map" onclick="switchView('map')"><span class="v-ic">◫</span>路线</button>
           <button class="vtab" id="vtab-list" onclick="switchView('list')"><span class="v-ic">☰</span>行程</button>
@@ -116,7 +149,16 @@
         <div class="view-pane" id="view-map">
           <div class="map-holder big">
             <div id="amap-big"></div>
-            <div class="overlay"><b>◫</b> 手绘路线 · 按天分色</div>
+            <div class="map-toggle" id="baseToggle">
+              <button class="on" data-base="sat" onclick="setBase('sat',this)">卫星</button>
+              <button data-base="street" onclick="setBase('street',this)">街道</button>
+            </div>
+            <div class="map-zoom" id="mapZoom">
+              <button onclick="mapZoomBtn(1)">＋</button>
+              <button onclick="mapZoomBtn(-1)">－</button>
+              <button onclick="mapZoomBtn(0)">⟳</button>
+            </div>
+            <div class="overlay"><b>◫</b> 值得的走法 · 按天分色</div>
           </div>
           <div class="route-strip" id="routeStrip"></div>
         </div>
@@ -124,8 +166,8 @@
         <div class="view-pane hidden" id="view-list">
           <div class="toggle">
             <button class="seg active" data-filter="all" onclick="setFilter(this)">综合</button>
-            <button class="seg" data-filter="xhs" onclick="setFilter(this)">◎ 看口碑</button>
-            <button class="seg" data-filter="amap" onclick="setFilter(this)">⌖ 看地点</button>
+            <button class="seg" data-filter="xhs" onclick="setFilter(this)">看口碑</button>
+            <button class="seg" data-filter="amap" onclick="setFilter(this)">看地点</button>
           </div>
           <div class="map-holder">
             <div id="amap"></div>
@@ -156,10 +198,8 @@
         <div class="pain">为什么是「真源」？</div>
         <div class="sub-p">市面上 AI 旅行产品最大的三个坑，莫友一一解决。</div>
         <div id="pains"></div>
-
         <div class="c-title">vs 同行</div>
         <div class="compare" id="compare"></div>
-
         <div class="cta">
           <button class="btn" onclick="toast('数据集含高德真实抓取 · 可查证')">查看数据集 ↗</button>
         </div>
@@ -169,6 +209,51 @@
     </div>
 
     <div class="toast" id="toast"></div>
+  </div>
+
+  <!-- ===== AI 对话浮层（大脑） ===== -->
+  <div class="ai-overlay hidden" id="aiOverlay">
+    <div class="ai-sheet">
+      <div class="ai-hd">
+        <div class="ai-avatar" id="aiAvatar">✧</div>
+        <div class="ai-name">
+          <div class="ai-nm">小莫 · AI 大脑</div>
+          <div class="ai-st" id="aiState">正在听你说…</div>
+        </div>
+        <button class="ai-close" onclick="closeAI()">✕</button>
+      </div>
+      <div class="ai-reqbar" id="aiReqBar"></div>
+      <div class="ai-chat" id="aiChat"></div>
+      <div class="ai-typing" id="aiTyping">
+        <div class="typing-input">
+          <input id="aiInput" placeholder="直接说一句…" onkeydown="if(event.key==='Enter')sendAI()">
+          <button onclick="sendAI()">🎤</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 宠物自定义 ===== -->
+  <div class="pet-overlay hidden" id="petOverlay">
+    <div class="pet-sheet">
+      <div class="ai-hd">
+        <div class="ai-avatar" id="petPreview">✧</div>
+        <div class="ai-name">
+          <div class="ai-nm">我的小莫</div>
+          <div class="ai-st">捏一个陪你旅行的小家伙</div>
+        </div>
+        <button class="ai-close" onclick="closePet()">✕</button>
+      </div>
+      <div class="pet-stage">
+        <svg viewBox="0 0 120 120" width="150" height="150" id="petSvg"></svg>
+      </div>
+      <div class="pet-cfg">
+        <div class="pc-row"><span class="pc-l">身形</span><span class="pc-opts" id="petTypeRow"></span></div>
+        <div class="pc-row"><span class="pc-l">颜色</span><span class="pc-opts" id="petColorRow"></span></div>
+        <div class="pc-row"><span class="pc-l">配饰</span><span class="pc-opts" id="petAccentRow"></span></div>
+      </div>
+      <button class="btn" onclick="closePet()">收下小莫</button>
+    </div>
   </div>
 
   <script src="data.js"></script>
