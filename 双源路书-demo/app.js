@@ -481,7 +481,7 @@ function renderSocial() {
       </div>
       <div class="post-acts">
         <button class="act like" onclick="liked(this)"><span class="a-ic">♡</span><em>${note[2]}</em></button>
-        <button class="act cmt" onclick="cmt(this)"><span class="a-ic">✎</span><em>${(note[2] % 4)}</em></button>
+        <button class="act cmt" onclick="cmt(this)"><span class="a-ic">💬</span><em>${(note[2] % 4)}</em></button>
         <button class="act share" onclick="postShare(this)"><span class="a-ic">↗</span><em>分享</em></button>
       </div>
       <div class="cmts">
@@ -1475,8 +1475,8 @@ function buildFavs() {
       </div>
       <div class="fc-acts" onclick="event.stopPropagation()">
         <button class="act ${liked?'like on':''}" onclick="favLike('${b.id}',this)"><span class="a-ic">${liked?'♥':'♡'}</span><em>${likes}</em></button>
-        <button class="act cmt" onclick="toast('评论功能演示')"><span class="a-ic">✎</span><em>${b.cmt}</em></button>
-        <button class="act" onclick="favCollect(this)"><span class="a-ic">🔖</span><em>收藏</em></button>
+        <button class="act cmt" onclick="toast('评论功能演示')"><span class="a-ic">💬</span><em>${b.cmt}</em></button>
+        <button class="act" onclick="favCollect(this)"><span class="a-ic">⭐</span><em>收藏</em></button>
         <button class="act share" onclick="favShare('${b.title}')"><span class="a-ic">↗</span><em>分享</em></button>
       </div>
       <div class="fc-enter">查看完整路书 ↗</div>
@@ -1596,8 +1596,8 @@ function buildBook(b) {
     </div>`;
   if (acts) acts.innerHTML = `
     <button class="bk-act ${liked?'on':''}" onclick="favLike('${b.id}',this)"><span class="a-ic">${liked?'♥':'♡'}</span>${likes}</button>
-    <button class="bk-act" onclick="toast('评论功能演示')"><span class="a-ic">✎</span>${b.cmt}</button>
-    <button class="bk-act" onclick="favCollect(this)"><span class="a-ic">🔖</span>收藏</button>
+    <button class="bk-act" onclick="toast('评论功能演示')"><span class="a-ic">💬</span>${b.cmt}</button>
+    <button class="bk-act" onclick="favCollect(this)"><span class="a-ic">⭐</span>收藏</button>
     <button class="bk-act share" onclick="bookShare()"><span class="a-ic">↗</span>分享</button>`;
 }
 function bookShare() {
