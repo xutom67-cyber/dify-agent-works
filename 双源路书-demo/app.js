@@ -69,7 +69,7 @@ function buildThemeSelector() {
   M.themes.forEach((t, i) => {
     const chip = document.createElement('button');
     chip.className = 'dr-theme' + (i === currentTheme ? ' on' : '');
-    chip.innerHTML = `<span class="ic">${t.icon}</span>${t.name}`;
+    chip.innerHTML = `${t.name}`;
     chip.onclick = () => {
       currentTheme = i;
       document.querySelectorAll('.dr-theme').forEach((x, xi) => x.classList.toggle('on', xi === i));
