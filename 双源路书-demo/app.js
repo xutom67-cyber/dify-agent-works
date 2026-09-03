@@ -1595,7 +1595,10 @@ function buildBook(b) {
         <div class="bk-dot" style="background:${spotColor(spotType(s)).c}"></div>
         <div class="bk-spot-card" style="--spotc:${spotColor(spotType(s)).c};--spotbg:${spotColor(spotType(s)).bg}" onclick="openSpotByIndex('${b.id}',${si})">
           ${s.img?`<img src="${s.img}" alt="">`:''}
-          <div><span class="spot-tag" style="color:${spotColor(spotType(s)).c};background:${spotColor(spotType(s)).bg}">${spotColor(spotType(s)).name}</span><b>${s.name}</b><span>${s.type}</span></div>
+          <div class="bk-spot-txt">
+            <span class="spot-tag" style="color:${spotColor(spotType(s)).c};background:${spotColor(spotType(s)).bg}">${spotColor(spotType(s)).name}</span>
+            <b>${s.name}</b><span>${s.type}</span>
+          </div>
           <em>${s.cost}</em>
           <p>${s.note}</p>
         </div>
