@@ -4,6 +4,7 @@
 
 # 本地样式备份（不入库）
 style_backup_*.css
+index_backup_*.html
 
 # 凭证 / 密钥（绝不提交）
 *.conf
