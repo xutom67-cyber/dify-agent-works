@@ -61,8 +61,8 @@
         </div>
         <div class="dr-sec">路书广场</div>
         <div class="dr-favs">
-          <button class="dr-fav-btn" onclick="openFavs('mine')">📌 我的路书</button>
-          <button class="dr-fav-btn" onclick="openFavs('all')">🌐 大家的路书</button>
+          <button class="dr-fav-btn" onclick="openFavs('mine')">我的路书</button>
+          <button class="dr-fav-btn" onclick="openFavs('all')">大家的路书</button>
         </div>
         <div class="dr-sec">当前所在</div>
         <div class="dr-loc" id="drLoc"><span class="dlc-dot"></span><span id="drLocName">上海</span></div>
@@ -139,8 +139,7 @@
 
         <!-- 中间交互提示 -->
         <div class="s1-prompt">
-          <span class="prompt-mic">🎤</span>
-          <span class="prompt-txt">通过「嘿，小莫」<b>语音唤醒</b> · 或按住下方按钮唤醒小莫</span>
+          <span class="prompt-txt">「嘿，小莫」<b>语音唤醒</b> · 或按住下方按钮唤醒</span>
         </div>
 
         <!-- 圆形输入按钮 -->
@@ -169,7 +168,7 @@
         <header class="s-head">
           <button class="back" onclick="go('screen1')">‹</button>
           <div class="step-chip"><span id="s2City">上海</span> · 小莫已懂你</div>
-          <button class="hd-share" onclick="wakeAI()">💬 重新跟小莫说</button>
+          <button class="hd-share" onclick="wakeAI()">重新跟小莫说 ↗</button>
         </header>
 
         <div class="confirm-hd">
@@ -217,7 +216,7 @@
         </div>
 
         <div class="sum" id="sum"></div>
-        <div class="ai-strip" onclick="wakeAI()"><span class="as-ic">🎤</span> 想改？直接跟小莫说</div>
+        <div class="ai-strip" onclick="wakeAI()"><span class="as-ic">↔</span> 想改？直接跟小莫说</div>
 
         <div class="view-tabs">
           <button class="vtab active" id="vtab-map" onclick="switchView('map')"><span class="v-ic">◫</span>路线</button>
@@ -289,7 +288,7 @@
       <section class="screen s-favs" id="screen-favs">
         <header class="s-head">
           <button class="back" onclick="go('screen1')">‹</button>
-          <div class="step-chip" id="favsTitle">🌐 大家的路书</div>
+          <div class="step-chip" id="favsTitle">大家的路书</div>
           <button class="hd-share" onclick="toast('已抓到最新路书')">刷新</button>
         </header>
         <div class="favs-tabs">
@@ -352,7 +351,7 @@
       <div class="ai-typing" id="aiTyping">
         <div class="typing-input">
           <input id="aiInput" placeholder="直接说一句…" onkeydown="if(event.key==='Enter')sendAI()">
-          <button onclick="sendAI()">🎤</button>
+          <button onclick="sendAI()">↵</button>
         </div>
       </div>
     </div>

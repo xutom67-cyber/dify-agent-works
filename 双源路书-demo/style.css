@@ -840,8 +840,6 @@ body::before{
   position:absolute;top:482px;left:0;right:0;z-index:6;text-align:center;
   transform:translateY(-50%);pointer-events:none;padding:0 30px;
 }
-.s1-prompt .prompt-mic{display:block;font-size:26px;margin:0 auto 12px;filter:drop-shadow(0 0 12px rgba(192,58,43,.65));animation:micFloat 3.6s ease-in-out infinite}
-@keyframes micFloat{0%,100%{transform:translateY(0);opacity:.9}50%{transform:translateY(-6px);opacity:1}}
 .s1-prompt .prompt-txt{
   display:inline-block;font-size:12.5px;color:#d7d9dd;letter-spacing:.06em;
   background:rgba(16,13,12,.5);border:1px solid rgba(255,255,255,.12);border-radius:999px;
@@ -877,7 +875,7 @@ body::before{
 .cube-face.bottom{filter:brightness(.7)}
 @media (prefers-reduced-motion:reduce){
   .cube{animation:none}
-  .s1-prompt .prompt-mic{animation:none}
+  .s1 .s1-row{animation:none}
   .holy-voice::before{animation:none}
 }
 

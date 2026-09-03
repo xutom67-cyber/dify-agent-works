@@ -1448,7 +1448,7 @@ function buildFavs() {
   const list = document.getElementById('favsList');
   const tabAll = document.getElementById('favtab-all');
   const tabMine = document.getElementById('favtab-mine');
-  if (title) title.textContent = favMode === 'mine' ? '📌 我的路书' : '🌐 大家的路书';
+  if (title) title.textContent = favMode === 'mine' ? '我的路书' : '大家的路书';
   if (tabAll) tabAll.classList.toggle('on', favMode === 'all');
   if (tabMine) tabMine.classList.toggle('on', favMode === 'mine');
   if (!list) return;
