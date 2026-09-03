@@ -480,9 +480,9 @@ function renderSocial() {
         <span class="pp-t">${sp.open}</span>
       </div>
       <div class="post-acts">
-        <button class="act like" onclick="liked(this)"><span class="a-ic">♡</span><em>${note[2]}</em></button>
-        <button class="act cmt" onclick="cmt(this)"><span class="a-ic">💬</span><em>${(note[2] % 4)}</em></button>
-        <button class="act share" onclick="postShare(this)"><span class="a-ic">↗</span><em>分享</em></button>
+        <button class="act like" onclick="liked(this)"><span class="a-ic">${ICONS.like}</span><em>${note[2]}</em></button>
+        <button class="act cmt" onclick="cmt(this)"><span class="a-ic">${ICONS.comment}</span><em>${(note[2] % 4)}</em></button>
+        <button class="act share" onclick="postShare(this)"><span class="a-ic">${ICONS.share}</span><em>分享</em></button>
       </div>
       <div class="cmts">
         <div class="cmt">
@@ -1434,6 +1434,13 @@ const FAV_BOOKS = [
 ];
 let favMode = 'all';
 let favLikeState = {};
+/* 纯线稿操作图标（stroke 单色，随 currentColor 变色） */
+const ICONS = {
+  like: `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.5s-7.4-4.9-9.7-8.3C.8 9.7 2.4 6 5.7 5.4c2.1-.4 4.3.7 6.3 3.4 2-2.7 4.2-3.8 6.3-3.4 3.3.6 4.9 4.3 3.4 6.8-2.3 3.4-9.7 8.3-9.7 8.3z"/></svg>`,
+  comment: `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4c5 0 8.5 3.2 8.5 7.2S17 18.4 12 18.4c-1 0-2-.1-2.9-.4L4.5 20l1.5-3.6C4.6 15 3.5 13.2 3.5 11.2 3.5 7.2 7 4 12 4z"/></svg>`,
+  bookmark: `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3.5h12v17l-6-4.2-6 4.2z"/></svg>`,
+  share: `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h14"/><path d="M12 5l7 7-7 7"/></svg>`,
+};
 function openProfile() {
   closeDrawer(); buildProfile(); go('screen-profile');
 }
@@ -1474,10 +1481,10 @@ function buildFavs() {
         <div class="fm"><span>消费金额</span><em>${b.cost}</em></div>
       </div>
       <div class="fc-acts" onclick="event.stopPropagation()">
-        <button class="act ${liked?'like on':''}" onclick="favLike('${b.id}',this)"><span class="a-ic">${liked?'♥':'♡'}</span><em>${likes}</em></button>
-        <button class="act cmt" onclick="toast('评论功能演示')"><span class="a-ic">💬</span><em>${b.cmt}</em></button>
-        <button class="act" onclick="favCollect(this)"><span class="a-ic">⭐</span><em>收藏</em></button>
-        <button class="act share" onclick="favShare('${b.title}')"><span class="a-ic">↗</span><em>分享</em></button>
+        <button class="act ${liked?'like on':''}" onclick="favLike('${b.id}',this)"><span class="a-ic">${ICONS.like}</span><em>${likes}</em></button>
+        <button class="act cmt" onclick="toast('评论功能演示')"><span class="a-ic">${ICONS.comment}</span><em>${b.cmt}</em></button>
+        <button class="act" onclick="favCollect(this)"><span class="a-ic">${ICONS.bookmark}</span><em>收藏</em></button>
+        <button class="act share" onclick="favShare('${b.title}')"><span class="a-ic">${ICONS.share}</span><em>分享</em></button>
       </div>
       <div class="fc-enter">查看完整路书 ↗</div>
     </article>`;
@@ -1595,10 +1602,10 @@ function buildBook(b) {
       </div>`).join('')}
     </div>`;
   if (acts) acts.innerHTML = `
-    <button class="bk-act ${liked?'on':''}" onclick="favLike('${b.id}',this)"><span class="a-ic">${liked?'♥':'♡'}</span>${likes}</button>
-    <button class="bk-act" onclick="toast('评论功能演示')"><span class="a-ic">💬</span>${b.cmt}</button>
-    <button class="bk-act" onclick="favCollect(this)"><span class="a-ic">⭐</span>收藏</button>
-    <button class="bk-act share" onclick="bookShare()"><span class="a-ic">↗</span>分享</button>`;
+    <button class="bk-act ${liked?'on':''}" onclick="favLike('${b.id}',this)"><span class="a-ic">${ICONS.like}</span>${likes}</button>
+    <button class="bk-act" onclick="toast('评论功能演示')"><span class="a-ic">${ICONS.comment}</span>${b.cmt}</button>
+    <button class="bk-act" onclick="favCollect(this)"><span class="a-ic">${ICONS.bookmark}</span>收藏</button>
+    <button class="bk-act share" onclick="bookShare()"><span class="a-ic">${ICONS.share}</span>分享</button>`;
 }
 function bookShare() {
   const b = FAV_BOOKS.find(x => x.id === currentBook);
