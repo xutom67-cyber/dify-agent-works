@@ -77,7 +77,8 @@ body{
 .screen.active{display:flex}
 .screen::-webkit-scrollbar{width:0}
 .safe-bottom{height:26px}
-.s-head{display:flex;align-items:center;gap:10px;padding:8px 18px 2px;flex-shrink:0}
+.s-head{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:10px;padding:8px 18px 2px;flex-shrink:0;
+  background:linear-gradient(180deg, var(--paper) 0%, var(--paper) 60%, rgba(250,250,248,0) 100%);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
 .s-head .back{width:34px;height:34px;border-radius:50%;border:0;background:var(--card);box-shadow:var(--sh);font-size:20px;color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:500}
 .step-chip{font-size:12px;font-weight:600;color:var(--ink-soft);background:var(--card);border-radius:12px;padding:7px 12px;box-shadow:var(--sh)}
 .step-chip.bright{color:var(--brand);background:var(--brand-soft)}
@@ -368,9 +369,10 @@ body{
 .drawer.open{pointer-events:auto}
 .drawer-scrim{position:absolute;inset:0;background:rgba(15,15,15,.3);backdrop-filter:blur(2px);opacity:0;transition:.25s}
 .drawer.open .drawer-scrim{opacity:1}
-.drawer-panel{position:absolute;top:0;bottom:0;left:0;width:290px;background:var(--card);box-shadow:10px 0 40px rgba(20,20,18,.14);padding:26px 22px;transform:translateX(-100%);transition:.28s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;border-right:1px solid var(--line)}
+.drawer-panel{position:absolute;top:0;bottom:0;left:0;width:290px;background:var(--card);box-shadow:10px 0 40px rgba(20,20,18,.14);padding:26px 22px;transform:translateX(-100%);transition:.28s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;border-right:1px solid var(--line);overflow-y:auto}
+.drawer-panel::-webkit-scrollbar{width:0}
 .drawer.open .drawer-panel{transform:none}
-.dr-user{display:flex;align-items:center;gap:12px;padding-bottom:18px;border-bottom:1px solid var(--line)}
+.dr-user{position:sticky;top:0;z-index:2;background:var(--card);display:flex;align-items:center;gap:12px;padding-bottom:18px;border-bottom:1px solid var(--line)}
 .dr-avatar{width:46px;height:46px;border-radius:50%;background:var(--brand-soft);color:var(--brand);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
 .dr-name{font-size:15px;font-weight:700}
 .dr-sub{font-size:11px;color:var(--ink-faint);margin-top:2px}
@@ -530,7 +532,8 @@ body::before{
 
 /* ================= 侧边隐藏栏：液态玻璃面板 ================= */
 .drawer-panel{
-  isolation:isolate;overflow:hidden;position:relative;
+  isolation:isolate;position:absolute;top:0;bottom:0;left:0;width:290px;overflow-y:auto;overflow-x:hidden;
+  padding:26px 22px;color:var(--ink);
   background:
     linear-gradient(165deg, rgba(255,255,255,.26), rgba(250,248,244,.14) 55%, rgba(246,243,238,.20));
   -webkit-backdrop-filter:blur(30px) saturate(1.5);
@@ -539,6 +542,8 @@ body::before{
              inset 0 0 0 .5px rgba(255,255,255,.5),
              inset 1px 0 0 rgba(255,255,255,.7);
 }
+.drawer-panel::-webkit-scrollbar{width:0}
+.drawer-panel .dr-user{position:sticky;top:0;z-index:2;background:rgba(252,250,246,.88);-webkit-backdrop-filter:blur(10px) saturate(1.4);backdrop-filter:blur(10px) saturate(1.4);margin:0 -22px 0;padding-bottom:18px}
 /* 玻璃内芯：折射扭曲层 —— 让背景光透过玻璃产生弯曲/流动（液态玻璃的灵魂） */
 .drawer-panel .lg-refract{
   position:absolute;inset:-24px;z-index:-2;pointer-events:none;
@@ -1018,10 +1023,12 @@ body::before{
 .footmap-legend::before{content:'✦ ';color:var(--brand)}
 
 /* ============================================================
-   评论页
+   评论页（底部弹出，像聊天界面）
    ============================================================ */
-.s-cmt{background:var(--paper);padding-bottom:0}
-.cmt-list{padding:10px 18px 90px}
+.s-cmt{background:var(--paper);padding-bottom:0;z-index:60}
+.s-cmt.active{animation:cmtUp .32s cubic-bezier(.4,0,.2,1)}
+@keyframes cmtUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.cmt-list{padding:10px 18px 90px;overflow-y:auto}
 .cmt-sum{font-size:12.5px;color:var(--ink-soft);padding:8px 2px 14px;border-bottom:1px solid var(--line)}
 .cmt-sum b{color:var(--brand);font-weight:700}
 .cmt-item{display:flex;gap:11px;padding:14px 0;border-bottom:1px solid var(--line)}
@@ -1081,3 +1088,7 @@ body::before{
 .bk-spot-card .bk-spot-txt>span:not(.spot-tag){font-size:11px;color:var(--ink-soft);flex:1}
 .bk-spot-card:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(0,0,0,.14)}
 .bk-spot-card{border-color:rgba(255,255,255,.5)}
+
+/* 侧边栏顶部用户卡吸顶（不随滚动滚走） */
+.drawer-panel .dr-user{position:sticky;top:0;z-index:5;background:rgba(252,250,246,.9);-webkit-backdrop-filter:blur(12px) saturate(1.4);backdrop-filter:blur(12px) saturate(1.4);margin:0 -22px;padding-bottom:18px;border-bottom:1px solid var(--line)}
+.drawer-panel .dr-user:hover{color:inherit}

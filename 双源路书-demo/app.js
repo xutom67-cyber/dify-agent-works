@@ -1692,6 +1692,7 @@ function sendCmt() {
   toast('评论已发布');
 }
 function openBookCmt(id) { openCmt(id); }
+function closeCmt() { go('screen-book'); }
 
 /* ============================================================
    景点详情弹出层：每个景点/子标签都可点开
