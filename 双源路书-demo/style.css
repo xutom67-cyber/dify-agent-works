@@ -310,7 +310,7 @@ body{
 .act.like.on{color:var(--brand);font-weight:600}
 .act.like.on .a-ic{color:var(--brand)}
 .cmts{padding:10px 1px 2px}
-.cmt{display:flex;gap:8px;margin-bottom:8px;align-items:flex-start}
+.cmts .cmt{display:flex;gap:8px;margin-bottom:8px;align-items:flex-start}
 .ava.sm{width:24px;height:24px;font-size:11px;border-radius:50%}
 .cmt-b{font-size:12.5px;line-height:1.5;color:var(--ink);background:#f7f1e6;border-radius:12px;padding:6px 10px;flex:1}
 .cmt-u{color:var(--brand);font-weight:600;margin-right:4px}
@@ -935,6 +935,7 @@ body::before{
 .fav-card .fc-acts{display:flex;gap:8px;padding:12px 14px 14px;border-top:1px solid var(--line);margin-top:12px;align-items:center}
 .fav-card .fc-acts .act{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;border:0;background:none;font-size:12.5px;color:var(--ink-soft);cursor:pointer;padding:7px 2px;border-radius:10px;transition:.15s;line-height:1;white-space:nowrap;height:36px;min-height:36px}
 .fav-card .act:hover{background:var(--brand-soft);color:var(--brand)}
+.fav-card .act.cmt,.fav-card .act.share,.fav-card .act.like{display:flex;align-items:center;justify-content:center}
 .fav-card .act .a-ic{font-size:14px;display:inline-flex;align-items:center;justify-content:center}
 .fav-card .act .a-ic svg{display:block;vertical-align:middle}
 .fav-card .act.like.on{color:var(--brand);font-weight:700}
