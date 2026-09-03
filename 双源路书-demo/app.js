@@ -1275,20 +1275,80 @@ function initCubeScene() {
     btn.innerHTML = `<g>${svg.innerHTML}</g>`;
   }
 
-  // 2) 立方体旋转 → 同步右上角城市标签（每 90° 换一个城市）
+  // 2) 扫描网格 canvas（透视网格 + 数据流）+ 数据卡轮换 + HUD
   const cap = document.getElementById('cityHeroCap');
-  const cube = document.getElementById('cube');
-  const labels = { f1: '上海', f2: '北京', f3: '成都', f4: '上海', f5: '上海', f6: '成都' };
-  const order = ['f1','f2','f3','f4','f5','f6'];
+  const cards = Array.prototype.slice.call(document.querySelectorAll('.data-card'));
+  const cardCities = ['上海','北京','成都','上海','上海','成都'];
+  // 初始：第一张在前
+  if (cards.length) cards[0].classList.add('on');
 
-  // 用一个定时器按环绕柱旋转相位更新城市标签
-  let capIdx = 0;
+  // 轮换数据卡（层叠浮起淡入淡出）
+  let cur = 0;
   setInterval(() => {
-    capIdx = (capIdx + 1) % 6;
-    if (cap) cap.textContent = labels[order[capIdx]];
-  }, 5700); // 与 34s 环绕旋转的每次换面大致同步（6面=每 5.7s 转过一张）
+    const prev = cur; cur = (cur + 1) % cards.length;
+    cards[prev].classList.remove('on'); cards[prev].classList.add('off');
+    cards[cur].classList.remove('off'); cards[cur].classList.add('on');
+    if (cap) cap.textContent = cardCities[cur];
+  }, 3600);
 
-  // 3) 液态粒子 canvas（立方体表面流动的液态光点）
+  // HUD：实时时间 + 坐标微动
+  const hudTime = document.getElementById('hudTime');
+  const hudCoord = document.getElementById('hudCoord');
+  if (hudTime) {
+    const fmt = () => { const d = new Date(); return [d.getHours(),d.getMinutes(),d.getSeconds()].map(x=>String(x).padStart(2,'0')).join(':'); };
+    hudTime.textContent = fmt();
+    setInterval(() => { if (hudTime) hudTime.textContent = fmt(); }, 1000);
+  }
+  const coords = ['31.23°N · 121.47°E','39.90°N · 116.40°E','30.57°N · 104.07°E','31.20°N · 121.44°E'];
+  let ci = 0;
+  setInterval(() => { if (hudCoord) { ci = (ci + 1) % coords.length; hudCoord.textContent = coords[ci]; } }, 3600);
+
+  // 扫描网格 canvas（透视网格 + 流动数据流线）
+  drawGrid();
+
+  function drawGrid() {
+    const gg = document.getElementById('cubeGrid');
+    if (!gg) return;
+    const ctx2 = gg.getContext('2d');
+    const sc = document.getElementById('cubeScene');
+    function size2() { gg.width = sc.clientWidth; gg.height = sc.clientHeight; }
+    size2(); window.addEventListener('resize', size2);
+    const t0 = Date.now();
+    (function frame() {
+      const w = gg.width, h = gg.height, t = (Date.now() - t0) / 1000;
+      ctx2.clearRect(0, 0, w, h);
+      // 透视网格：水平/垂直细线，中间有深度感
+      ctx2.strokeStyle = 'rgba(106,143,90,.10)'; ctx2.lineWidth = .6;
+      const vps = 24;
+      for (let i = 0; i <= vps; i++) {
+        const x = (w / vps) * i;
+        ctx2.beginPath(); ctx2.moveTo(x, 0); ctx2.lineTo(x, h); ctx2.stroke();
+      }
+      for (let j = 0; j <= 16; j++) {
+        const y = (h / 16) * j;
+        ctx2.beginPath(); ctx2.moveTo(0, y); ctx2.lineTo(w, y); ctx2.stroke();
+      }
+      // 数据流：沿网格向右流动的短线（科技数据感）
+      ctx2.strokeStyle = 'rgba(192,58,43,.35)'; ctx2.lineWidth = 1.4;
+      for (let k = 0; k < 14; k++) {
+        const row = (k % 16) * (h / 16) + 3;
+        const speed = 60 + (k % 5) * 30;
+        const lead = ((t * speed) + k * 97) % (w + 40) - 20;
+        ctx2.beginPath(); ctx2.moveTo(lead, row); ctx2.lineTo(lead + 18, row); ctx2.stroke();
+      }
+      // 数据点：周期闪烁
+      for (let m = 0; m < 10; m++) {
+        const px = ((t * 40 + m * 137) % (w * 1.4)) - w * 0.2;
+        const py = (m % 16) * (h / 16) + 8;
+        const a = .3 + .4 * Math.sin(t * 2 + m);
+        ctx2.fillStyle = `rgba(106,143,90,${a})`;
+        ctx2.beginPath(); ctx2.arc(px, py, 1.8, 0, Math.PI * 2); ctx2.fill();
+      }
+      requestAnimationFrame(frame);
+    })();
+  }
+
+  // 3) 液态粒子 canvas（面板表面流动的液态光点）
   const cv = document.getElementById('cubeParticles');
   if (!cv) return;
   const ctx = cv.getContext('2d');

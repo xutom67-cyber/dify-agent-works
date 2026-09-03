@@ -77,21 +77,61 @@
 
       <!-- 屏1 开场（3D 立方体轮换 + 液态粒子 + 宠物猫 + 圆形输入） -->
       <section class="screen s1 active" id="screen1">
-        <!-- 3D 环绕画廊：城市景窗卡片围绕中心柱旋转轮换 -->
+        <!-- 科技感背景：扫描网格 + 数据流 + 城市数据卡轮换 + HUD -->
         <div class="cube-scene" id="cubeScene" aria-hidden="true">
-          <div class="cube" id="cube">
-            <div class="cube-face f1"><span class="cf-tag">上海 · 梧桐区</span><span class="cf-city">上海</span><img src="images/pudao.jpg" alt=""></div>
-            <div class="cube-face f2"><span class="cf-tag">北京 · 老城</span><span class="cf-city">北京</span><img src="images/bj_jingshan.jpg" alt=""></div>
-            <div class="cube-face f3"><span class="cf-tag">成都 · 慢生活</span><span class="cf-city">成都</span><img src="images/cd_renmingongyuan.jpg" alt=""></div>
-            <div class="cube-face f4"><span class="cf-tag">上海 · 武康路</span><span class="cf-city">上海</span><img src="images/wukang.jpg" alt=""></div>
-            <div class="cube-face f5"><span class="cf-tag">上海 · 转角</span><span class="cf-city">上海</span><img src="images/bauricheng.jpg" alt=""></div>
-            <div class="cube-face f6"><span class="cf-tag">成都 · 盖碗茶</span><span class="cf-city">成都</span><img src="images/cd_heming.jpg" alt=""></div>
+          <canvas class="cube-grid" id="cubeGrid" aria-hidden="true"></canvas>
+          <div class="grid-scan"></div>
+          <!-- 城市数据卡：层叠，逐个浮起淡入淡出 -->
+          <div class="data-stack" id="dataStack">
+            <div class="data-card dc1">
+              <img src="images/pudao.jpg" alt="">
+              <div class="dc-top"><span class="dc-city">上海</span><span class="dc-hash">#别赶路 · 去感受路</span></div>
+              <div class="dc-tag">梧桐区 · 海派建筑漫步</div>
+              <div class="dc-metric"><span>体感</span><b>21°</b> <em>AQI 优</em></div>
+            </div>
+            <div class="data-card dc2">
+              <img src="images/bj_jingshan.jpg" alt="">
+              <div class="dc-top"><span class="dc-city">北京</span><span class="dc-hash">#红墙灰瓦</span></div>
+              <div class="dc-tag">老城胡同 · 皇家建筑</div>
+              <div class="dc-metric"><span>体感</span><b>18°</b> <em>AQI 良</em></div>
+            </div>
+            <div class="data-card dc3">
+              <img src="images/cd_renmingongyuan.jpg" alt="">
+              <div class="dc-top"><span class="dc-city">成都</span><span class="dc-hash">#盖碗茶慢生活</span></div>
+              <div class="dc-tag">市井 · 茶馆 · 慢生活</div>
+              <div class="dc-metric"><span>体感</span><b>26°</b> <em>AQI 良</em></div>
+            </div>
+            <div class="data-card dc4">
+              <img src="images/wukang.jpg" alt="">
+              <div class="dc-top"><span class="dc-city">上海</span><span class="dc-hash">#武康路转角</span></div>
+              <div class="dc-tag">历史街区 · 出片机位</div>
+              <div class="dc-metric"><span>体感</span><b>22°</b> <em>AQI 优</em></div>
+            </div>
+            <div class="data-card dc5">
+              <img src="images/bauricheng.jpg" alt="">
+              <div class="dc-top"><span class="dc-city">上海</span><span class="dc-hash">#城市文脉</span></div>
+              <div class="dc-tag">街区更新 · 数字人文</div>
+              <div class="dc-metric"><span>体感</span><b>22°</b> <em>AQI 优</em></div>
+            </div>
+            <div class="data-card dc6">
+              <img src="images/cd_heming.jpg" alt="">
+              <div class="dc-top"><span class="dc-city">成都</span><span class="dc-hash">#百年茶馆</span></div>
+              <div class="dc-tag">鹤鸣茶社 · 竹椅盖碗</div>
+              <div class="dc-metric"><span>体感</span><b>26°</b> <em>AQI 良</em></div>
+            </div>
           </div>
           <canvas class="cube-particles" id="cubeParticles" aria-hidden="true"></canvas>
+          <!-- HUD 角标 -->
+          <div class="hud">
+            <span class="hud-tl">CITY DATA ● ONLINE</span>
+            <span class="hud-tr" id="hudCoord">31.23°N · 121.47°E</span>
+            <span class="hud-bl">SCAN 01</span>
+            <span class="hud-br" id="hudTime">12:28:07</span>
+          </div>
           <div class="cube-fade"></div>
         </div>
 
-        <!-- 城市名片（右上，跟踪立方体当前面） -->
+        <!-- 城市名片（右上，跟踪当前数据卡） -->
         <div class="city-hero-top">
           <div class="city-hero-cap" id="cityHeroCap">上海</div>
         </div>
