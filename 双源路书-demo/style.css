@@ -381,9 +381,10 @@ body{
 .dr-theme.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
 .dr-theme .ic{color:var(--brand)}
 .dr-theme.on .ic{color:var(--accent)}
-.dr-hist{display:flex;flex-direction:column;gap:5px;overflow-y:auto;max-height:300px}
-.dr-datas{margin-top:auto}
-.dr-hist::-webkit-scrollbar{width:0}
+.dr-hist{display:flex;flex-direction:column;gap:5px;overflow-y:auto;flex:1;min-height:160px;max-height:300px;padding-right:2px}
+.dr-hist::-webkit-scrollbar{width:4px}
+.dr-hist::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px}
+.dr-hist::-webkit-scrollbar-track{background:transparent}
 .dr-hist-item{display:flex;align-items:center;gap:8px;border:0;background:none;padding:10px 8px;border-radius:11px;cursor:pointer;text-align:left;transition:.15s;color:var(--ink)}
 .dr-hist-item:hover{background:#f5f4f1}
 .dr-hist-item .dh-dot{width:8px;height:8px;border-radius:50%;background:var(--brand);flex-shrink:0}
@@ -1000,3 +1001,15 @@ body::before{
 .book-acts .bk-act .a-ic{font-size:16px}
 .book-acts .bk-act.on{color:var(--brand);border-color:var(--brand);background:var(--brand-soft);font-weight:700}
 .book-acts .bk-act.share{color:var(--brand)}
+
+/* ============================================================
+   用户主页 · 足迹地图
+   ============================================================ */
+.profile-footmap{padding:0 20px}
+.footmap{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--sh);padding:14px 16px 12px;position:relative}
+.footmap svg{width:100%;height:180px;display:block}
+.footmap .china{fill:rgba(192,58,43,.05);stroke:rgba(192,58,43,.3);stroke-width:.6;stroke-linejoin:round}
+.footmap .fm-node{cursor:pointer}
+.footmap .fm-node text{font-family:var(--serif);font-size:3.6px;letter-spacing:.04em}
+.footmap-legend{margin-top:8px;padding-top:9px;border-top:1px solid var(--line);font-size:10.5px;color:var(--ink-faint);letter-spacing:.06em;text-align:center}
+.footmap-legend::before{content:'✦ ';color:var(--brand)}

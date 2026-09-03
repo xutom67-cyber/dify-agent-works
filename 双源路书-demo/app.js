@@ -137,8 +137,15 @@ function buildHistory() {
   if (!el) return;
   const hist = [
     { city: "上海", title: "梧桐 · 微醺建筑", when: "9 月 1 日" },
+    { city: "上海", title: "武康路 · 出片路线", when: "8 月 28 日" },
     { city: "北京", title: "红墙 · 胡同深处", when: "8 月 24 日" },
     { city: "成都", title: "盖碗 · 慢半天", when: "8 月 12 日" },
+    { city: "北京", title: "景山 · 中轴线", when: "8 月 6 日" },
+    { city: "上海", title: "愚园路 · 设计集合", when: "7 月 30 日" },
+    { city: "成都", title: "宽窄 · 老城烟火", when: "7 月 19 日" },
+    { city: "上海", title: "安福路 · 咖啡巷", when: "7 月 8 日" },
+    { city: "北京", title: "国子监 · 文脉", when: "7 月 2 日" },
+    { city: "成都", title: "鹤鸣 · 盖碗茶", when: "6 月 25 日" },
   ];
   el.innerHTML = hist.map(h => `
     <button class="dr-hist-item" onclick="openHistory('${h.city}')">
@@ -1512,6 +1519,7 @@ function buildProfile() {
   const myBooks = FAV_BOOKS.filter(b => b.mine);
   if (favs) favs.innerHTML = myBooks.map(b => `<button class="pf-card" onclick="openFavs('mine')"><img src="${b.cover}" alt=""><span>${b.title}</span></button>`).join('');
   if (mine) mine.innerHTML = myBooks.map(b => `<button class="pf-card" onclick="openFavs('mine')"><img src="${b.cover}" alt=""><span>${b.title}</span></button>`).join('');
+  buildFootmap();
 }
 
 /* ============================================================
@@ -1595,4 +1603,42 @@ function buildBook(b) {
 function bookShare() {
   const b = FAV_BOOKS.find(x => x.id === currentBook);
   toast('已分享到社交媒体：' + (b ? b.title : '路书'));
+}
+
+/* ============================================================
+   用户主页 · 足迹地图（去过的城市标记 + 连线）
+   ============================================================ */
+function buildFootmap() {
+  const el = document.getElementById('profileFootmap');
+  if (!el) return;
+  // 去过的城市（出发点 geo），直接给安全的归一坐标（中国地图布局）
+  const visits = [
+    { name:'上海', lng:121.47, lat:31.23, n:8, tag:'主场 · 常去' },
+    { name:'北京', lng:116.40, lat:39.90, n:4, tag:'胡同 · 皇家' },
+    { name:'成都', lng:104.07, lat:30.57, n:3, tag:'慢生活' },
+    { name:'杭州', lng:120.15, lat:30.28, n:1, tag:'路过' },
+  ];
+  // 去过的城市（出发点 geo），直接给安全的归一坐标（中国地图布局）
+  const pos = {
+    '上海': { x: 74, y: 62 }, '北京': { x: 66, y: 38 }, '成都': { x: 51, y: 62 },
+    '杭州': { x: 72, y: 66 },
+  };
+  const nodes = visits.map(v => ({
+    ...v, x: pos[v.name] ? pos[v.name].x : 50, y: pos[v.name] ? pos[v.name].y : 50,
+  }));
+  el.innerHTML = `
+    <div class="footmap">
+      <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+        <path class="china" d="M14 24 L22 18 L30 20 L38 16 L46 20 L54 18 L62 22 L70 18 L78 23 L84 30 L82 38 L86 46 L80 54 L74 60 L68 70 L60 76 L52 72 L44 78 L36 74 L28 66 L22 58 L16 48 L12 36 Z"
+          fill="rgba(192,58,43,.06)" stroke="rgba(192,58,43,.35)" stroke-width=".6"/>
+        ${nodes.map(n => `
+          <g class="fm-node" onclick="toast('${n.name} · 去过 ${n.n} 次')">
+            <circle cx="${n.x}" cy="${n.y}" r="${2.4 + n.n * .7}" fill="rgba(192,58,43,.16)" stroke="var(--brand)" stroke-width=".5"/>
+            <circle cx="${n.x}" cy="${n.y}" r="1.2" fill="var(--brand)"/>
+            <text x="${n.x + 2.6}" y="${n.y - 1}" font-size="3.2" fill="var(--ink-soft)">${n.name} <tspan fill="var(--ink-faint)">${n.n}</tspan></text>
+          </g>`).join('')}
+        ${nodes.length > 1 ? `<polyline points="${nodes.map(n=>`${n.x},${n.y}`).join(' ')}" fill="none" stroke="rgba(106,143,90,.4)" stroke-width=".4" stroke-dasharray="1.5 1.5"/>` : ''}
+      </svg>
+      <div class="footmap-legend">去过 ${nodes.length} 座城市 · 点亮足迹</div>
+    </div>`;
 }
