@@ -932,8 +932,8 @@ body::before{
 .fav-card .fm{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
 .fav-card .fm span{font-size:10px;color:var(--ink-faint);letter-spacing:.08em;flex-shrink:0}
 .fav-card .fm em{font-style:normal;font-size:11.5px;color:var(--ink);font-weight:600;text-align:right}
-.fav-card .fc-acts{display:flex;gap:8px;padding:12px 14px 14px;border-top:1px solid var(--line);margin-top:12px}
-.fav-card .fc-acts .act{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;border:0;background:none;font-size:12.5px;color:var(--ink-soft);cursor:pointer;padding:7px 2px;border-radius:10px;transition:.15s;line-height:1;white-space:nowrap}
+.fav-card .fc-acts{display:flex;gap:8px;padding:12px 14px 14px;border-top:1px solid var(--line);margin-top:12px;align-items:center}
+.fav-card .fc-acts .act{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;border:0;background:none;font-size:12.5px;color:var(--ink-soft);cursor:pointer;padding:7px 2px;border-radius:10px;transition:.15s;line-height:1;white-space:nowrap;height:36px;min-height:36px}
 .fav-card .act:hover{background:var(--brand-soft);color:var(--brand)}
 .fav-card .act .a-ic{font-size:14px;display:inline-flex;align-items:center;justify-content:center}
 .fav-card .act .a-ic svg{display:block;vertical-align:middle}
@@ -1004,7 +1004,7 @@ body::before{
 .bk-spot-card em{position:absolute;top:12px;right:13px;font-style:normal;font-size:13px;font-weight:700;color:var(--brand)}
 .bk-spot-card p{font-size:12px;color:var(--ink-soft);line-height:1.6;margin-top:8px;padding-top:8px;border-top:1px solid var(--line)}
 .book-acts{position:sticky;bottom:0;display:flex;gap:8px;padding:12px 16px 22px;background:linear-gradient(180deg,rgba(250,250,248,0),var(--paper) 30%);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
-.book-acts .bk-act{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:var(--card);border-radius:13px;padding:12px 4px;font-size:13px;font-weight:600;color:var(--ink-soft);cursor:pointer;transition:.15s;box-shadow:var(--sh);line-height:1;white-space:nowrap}
+.book-acts .bk-act{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:var(--card);border-radius:13px;padding:12px 4px;font-size:13px;font-weight:600;color:var(--ink-soft);cursor:pointer;transition:.15s;box-shadow:var(--sh);line-height:1;white-space:nowrap;height:44px;min-height:44px}
 .book-acts .bk-act .a-ic{flex:0 0 auto}
 .book-acts .bk-act em,.book-acts .bk-act>text{line-height:1}
 .book-acts .bk-act .a-ic{font-size:16px;display:inline-flex;align-items:center;justify-content:center}
