@@ -787,8 +787,8 @@ body::before{
 /* 城市数据卡：层叠，当前卡最前，逐个浮起淡入淡出 */
 .data-stack{position:absolute;inset:0;z-index:3}
 .data-card{
-  position:absolute;left:50%;top:118px;width:272px;height:214px;
-  margin:0 0 0 -136px;border-radius:20px;overflow:hidden;
+  position:absolute;left:50%;top:152px;width:288px;height:228px;
+  margin:0 0 0 -144px;border-radius:20px;overflow:hidden;
   background:#191512;box-shadow:0 30px 70px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.08);
   display:flex;flex-direction:column;
   opacity:0;transform:rotate(-3deg) translateY(22px) scale(.94);
@@ -837,7 +837,7 @@ body::before{
 
 /* 中间交互提示：置于数据卡与输入区之间，避免重叠 */
 .s1-prompt{
-  position:absolute;top:420px;left:0;right:0;z-index:6;text-align:center;
+  position:absolute;top:482px;left:0;right:0;z-index:6;text-align:center;
   transform:translateY(-50%);pointer-events:none;padding:0 30px;
 }
 .s1-prompt .prompt-mic{display:block;font-size:26px;margin:0 auto 12px;filter:drop-shadow(0 0 12px rgba(192,58,43,.65));animation:micFloat 3.6s ease-in-out infinite}
