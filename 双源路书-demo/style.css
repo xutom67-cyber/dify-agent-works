@@ -773,42 +773,58 @@ body::before{
    + 液态粒子 + 圆形输入按钮
    ============================================================ */
 .s1{background:#0e0f12;overflow:hidden}
-/* 盒子场景：视点(perspective)让内壁展开 —— 视点距盒子近，四周墙面包裹视野 */
-.cube-scene{position:absolute;inset:0;z-index:1;display:flex;align-items:center;justify-content:center;perspective:560px;overflow:hidden}
-/* 盒子做得远大于视口，相机进中心 → 看到内壁 */
-.cube{width:900px;height:900px;transform-style:preserve-3d;animation:cubeSpin 30s ease-in-out infinite}
-/* 每面 = 放到对应墙方向 + 内容朝内(rotateY 180) */
+/* 环绕画廊场景：视点在柱外中心，卡片围绕中轴旋转 */
+.cube-scene{position:absolute;inset:0;z-index:1;display:flex;align-items:center;justify-content:center;perspective:1300px;overflow:hidden}
+.cube{transform-style:preserve-3d;animation:cubeSpin 34s ease-in-out infinite}
+/* 竖向景窗卡片：通透画框，正面朝外，边缘留缝营造空间 */
 .cube-face{
-  position:absolute;width:900px;height:900px;overflow:hidden;background:#14161a;
-  box-shadow:inset 0 0 120px rgba(0,0,0,.55);
+  position:absolute;top:50%;left:50%;
+  width:238px;height:400px;margin:-200px 0 0 -119px;
+  border-radius:22px;overflow:hidden;background:#171a1f;
+  box-shadow:0 30px 70px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.06);
+  backface-visibility:hidden;
 }
-.cube-face img{width:100%;height:100%;object-fit:cover;opacity:.94;filter:saturate(1.02) brightness(.84)}
-.cube-face::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(14,15,18,.04) 44%,rgba(14,15,18,.66) 100%)}
+.cube-face img{width:100%;height:100%;object-fit:cover;filter:saturate(1.05) brightness(.92)}
+.cube-face::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(14,15,18,0) 40%,rgba(14,15,18,.62) 100%)}
+.cube-face::before{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:linear-gradient(150deg,rgba(255,255,255,.14) 0%,transparent 30%);
+  border-radius:inherit}
+/* 城市右上角标 + 底部标签 */
+.cube-face .cf-city{
+  position:absolute;top:12px;left:12px;z-index:2;font-size:11px;font-weight:700;letter-spacing:.14em;color:#fff;
+  background:rgba(14,15,18,.42);border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:4px 10px;
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+}
 .cube-face .cf-tag{
-  position:absolute;left:0;right:0;bottom:0;z-index:2;padding:12px 16px;
-  font-family:var(--serif);font-size:15px;font-weight:600;letter-spacing:.1em;color:#fff;
+  position:absolute;left:0;right:0;bottom:0;z-index:2;padding:11px 14px;
+  font-family:var(--serif);font-size:13.5px;font-weight:600;letter-spacing:.08em;color:#fff;
+  display:flex;align-items:center;gap:8px;
 }
-.cube-face .cf-tag::before{content:'';display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--brand);margin-right:8px;vertical-align:2px;box-shadow:0 0 10px rgba(192,58,43,.9)}
-/* 六个墙：各自方向 + 内容朝内 */
-.cube-face.front{transform:translateZ(450px) rotateY(180deg)}
-.cube-face.back{transform:rotateY(180deg) translateZ(450px) rotateY(180deg)}
-.cube-face.right{transform:rotateY(90deg) translateZ(450px) rotateY(180deg)}
-.cube-face.left{transform:rotateY(-90deg) translateZ(450px) rotateY(180deg)}
-.cube-face.top{transform:rotateX(90deg) translateZ(450px) rotateY(180deg)}
-.cube-face.bottom{transform:rotateX(-90deg) translateZ(450px) rotateY(180deg)}
-/* 盒子整体转，视点固定在前方；盒子足够大、中心对准视点 → 内壁包裹四周 */
+.cube-face .cf-tag::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--brand);flex-shrink:0;box-shadow:0 0 10px rgba(192,58,43,.9)}
+/* 6 张围绕中轴：每张 rotateY(i*60deg) translateZ(R)，R 半径 = 深度 */
+.cube-face.f1{transform:rotateY(0deg) translateZ(430px)}
+.cube-face.f2{transform:rotateY(60deg) translateZ(430px)}
+.cube-face.f3{transform:rotateY(120deg) translateZ(430px)}
+.cube-face.f4{transform:rotateY(180deg) translateZ(430px)}
+.cube-face.f5{transform:rotateY(240deg) translateZ(430px)}
+.cube-face.f6{transform:rotateY(300deg) translateZ(430px)}
+/* 柱体旋转：间歇式走马灯 —— 每转过一张(60°)停留一次再继续，突出「切换城市」 */
 @keyframes cubeSpin{
-  0%{transform:rotateX(-6deg) rotateY(0deg)}
-  25%{transform:rotateX(-4deg) rotateY(90deg)}
-  50%{transform:rotateX(4deg) rotateY(180deg)}
-  75%{transform:rotateX(-4deg) rotateY(270deg)}
-  100%{transform:rotateX(-6deg) rotateY(360deg)}
+  0%{transform:rotateY(0deg)}
+  10%{transform:rotateY(60deg)}
+  25%{transform:rotateY(60deg)}
+  35%{transform:rotateY(120deg)}
+  50%{transform:rotateY(120deg)}
+  60%{transform:rotateY(180deg)}
+  75%{transform:rotateY(180deg)}
+  85%{transform:rotateY(240deg)}
+  100%{transform:rotateY(300deg)}
 }
 /* 液态粒子层 */
 .cube-particles{position:absolute;inset:0;z-index:2;pointer-events:none}
-/* 内壁边缘渐晕（让前景文字/按钮可读 + 包裹感放大） */
+/* 柔和渐晕：让前景文字/按钮可读 */
 .cube-fade{position:absolute;inset:0;z-index:3;pointer-events:none;
-  background:radial-gradient(120% 100% at 50% 42%, rgba(14,15,18,.02) 32%, rgba(14,15,18,.62) 92%)}
+  background:radial-gradient(130% 110% at 50% 44%, rgba(14,15,18,0) 34%, rgba(14,15,18,.6) 100%)}
 /* 顶部菜单/城市标签 */
 .s1 .city-hero-top{position:absolute;top:58px;left:18px;right:18px;z-index:12;display:flex;align-items:center;justify-content:space-between;pointer-events:none}
 .s1 .city-hero-cap{font-family:var(--serif);font-size:12px;font-weight:600;letter-spacing:.08em;color:#fff;background:rgba(15,15,15,.4);backdrop-filter:blur(10px);padding:7px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.18)}

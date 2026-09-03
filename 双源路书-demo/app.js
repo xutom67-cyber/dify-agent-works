@@ -1277,17 +1277,16 @@ function initCubeScene() {
 
   // 2) 立方体旋转 → 同步右上角城市标签（每 90° 换一个城市）
   const cap = document.getElementById('cityHeroCap');
-  const cities = ['上海', '北京', '成都', '上海', '北京', '成都'];
-  const faces = ['front', 'right', 'back', 'left', 'front', 'back'];
   const cube = document.getElementById('cube');
-  const labels = { front: '上海', back: '北京', right: '成都', left: '上海', top: '北京', bottom: '成都' };
+  const labels = { f1: '上海', f2: '北京', f3: '成都', f4: '上海', f5: '上海', f6: '成都' };
+  const order = ['f1','f2','f3','f4','f5','f6'];
 
-  // 用一个定时器按立方体旋转相位更新城市标签
+  // 用一个定时器按环绕柱旋转相位更新城市标签
   let capIdx = 0;
   setInterval(() => {
-    capIdx = (capIdx + 1) % 3;
-    if (cap) cap.textContent = labels[[ 'front','right','back','left','top','bottom' ][capIdx % 6]];
-  }, 6500); // 与 26s 立方体旋转的每面停留大致同步
+    capIdx = (capIdx + 1) % 6;
+    if (cap) cap.textContent = labels[order[capIdx]];
+  }, 5700); // 与 34s 环绕旋转的每次换面大致同步（6面=每 5.7s 转过一张）
 
   // 3) 液态粒子 canvas（立方体表面流动的液态光点）
   const cv = document.getElementById('cubeParticles');
