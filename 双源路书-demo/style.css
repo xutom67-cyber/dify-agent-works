@@ -470,113 +470,171 @@ body{
 .pc-opt.sw.on{outline:3px solid var(--brand);outline-offset:1px;border-color:transparent}
 
 /* ============================================================
-   液态流动 · Liquid Flow（只动视觉，不改排版/HTML）
-   多层低饱和光斑缓慢漂移，形成液体/极光流动质感
+   液态玻璃 · Liquid Glass（只动视觉，不改排版/HTML）
+   半透明磨砂玻璃面板 + 内部折射光斑 + 镜面高光扫过
    ============================================================ */
+body{position:relative;isolation:isolate;background:linear-gradient(160deg,#f7f5f1,#efece6 55%,#eae6df)}
 
-/* ---- 进入整页背景：极淡液体氛围 ---- */
-body{position:relative;isolation:isolate;background:linear-gradient(160deg,var(--paper),#f4f2ee 55%,#efede8)}
+/* ================= 进入整页背景：液体氛围 + 微光斑 ================= */
 body::before{
   content:'';position:fixed;inset:-20%;z-index:-1;pointer-events:none;
   background:
-    radial-gradient(30% 34% at 22% 26%, rgba(192,58,43,.10), transparent 70%),
-    radial-gradient(26% 30% at 78% 18%, rgba(106,143,90,.08), transparent 70%),
-    radial-gradient(34% 38% at 62% 82%, rgba(216,172,120,.10), transparent 72%),
-    radial-gradient(24% 28% at 12% 74%, rgba(155,46,34,.06), transparent 72%);
+    radial-gradient(32% 36% at 24% 24%, rgba(192,58,43,.12), transparent 68%),
+    radial-gradient(28% 32% at 76% 16%, rgba(106,143,90,.10), transparent 68%),
+    radial-gradient(36% 40% at 60% 84%, rgba(222,182,132,.13), transparent 70%),
+    radial-gradient(26% 30% at 10% 76%, rgba(155,46,34,.07), transparent 70%);
   background-size:250% 250%,230% 230%,270% 270%,240% 240%;
   background-repeat:no-repeat;
-  filter:blur(10px);
-  animation:liquidBody 34s ease-in-out infinite alternate;
+  filter:blur(8px);
+  animation:lgBody 36s ease-in-out infinite alternate;
 }
-@keyframes liquidBody{
+@keyframes lgBody{
   0%{background-position:0% 0%,100% 0%,50% 100%,0% 60%}
-  28%{background-position:45% 55%,70% 90%,12% 30%,90% 25%}
-  55%{background-position:100% 45%,20% 45%,78% 8%,35% 92%}
-  100%{background-position:55% 100%,8% 88%,100% 60%,15% 45%}
+  30%{background-position:50% 60%,70% 95%,10% 28%,92% 22%}
+  58%{background-position:100% 42%,18% 48%,80% 8%,36% 94%}
+  100%{background-position:52% 100%,8% 88%,100% 60%,14% 42%}
 }
 
-/* ---- 开场进入背景：城市照片上叠加流动的液体极光 ---- */
+/* ================= 开场进入背景：玻璃折射光 + 高光扫过 ================= */
 .city-hero{isolation:isolate}
 .city-hero::after{
-  content:'';position:absolute;inset:-12% -6%;z-index:2;pointer-events:none;
+  content:'';position:absolute;inset:0;z-index:2;pointer-events:none;
+  /* 玻璃折射：微反射层让照片呈现「隔着一层流动玻璃」 */
   background:
-    radial-gradient(38% 52% at 26% 36%, rgba(192,58,43,.38), transparent 70%),
-    radial-gradient(32% 44% at 80% 20%, rgba(106,143,90,.30), transparent 70%),
-    radial-gradient(44% 58% at 60% 92%, rgba(222,182,132,.42), transparent 72%),
-    radial-gradient(30% 42% at 10% 74%, rgba(160,116,180,.20), transparent 70%);
-  background-size:280% 280%,260% 260%,300% 300%,250% 250%;
+    radial-gradient(120% 90% at 30% -20%, rgba(255,255,255,.22), transparent 60%),
+    radial-gradient(36% 48% at 26% 38%, rgba(192,58,43,.40), transparent 72%),
+    radial-gradient(30% 42% at 78% 22%, rgba(106,143,90,.34), transparent 72%),
+    radial-gradient(42% 56% at 60% 94%, rgba(222,182,132,.48), transparent 74%),
+    radial-gradient(28% 40% at 8% 70%, rgba(160,116,180,.24), transparent 70%);
+  background-size:260% 260%,240% 240%,260% 260%,280% 280%,230% 230%;
   background-repeat:no-repeat;
-  filter:blur(22px);
+  filter:blur(18px);
   mix-blend-mode:soft-light;
-  animation:liquidHero 24s ease-in-out infinite alternate;
+  animation:lgHero 22s ease-in-out infinite alternate;
 }
-@keyframes liquidHero{
-  0%{background-position:0% 0%,100% 0%,50% 100%,0% 50%}
-  30%{background-position:50% 70%,60% 100%,8% 25%,85% 15%}
-  62%{background-position:100% 35%,18% 55%,85% 10%,40% 95%}
-  100%{background-position:45% 100%,5% 92%,100% 65%,10% 40%}
+@keyframes lgHero{
+  0%{background-position:0% 0%,0% 0%,100% 0%,50% 100%,0% 50%}
+  28%{background-position:60% 40%,50% 75%,60% 100%,6% 22%,90% 12%}
+  60%{background-position:100% 60%,100% 35%,16% 58%,90% 8%,40% 96%}
+  100%{background-position:40% 100%,45% 100%,4% 92%,100% 65%,10% 40%}
 }
 
-/* ---- 侧边隐藏栏：白卡上的浅液流光斑 ---- */
-.drawer-panel{isolation:isolate}
-.drawer-panel::before{
-  content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;
+/* ================= 侧边隐藏栏：液态玻璃面板 ================= */
+.drawer-panel{
+  isolation:isolate;overflow:hidden;
   background:
-    radial-gradient(50% 40% at 28% 16%, rgba(192,58,43,.14), transparent 70%),
-    radial-gradient(42% 36% at 84% 42%, rgba(106,143,90,.12), transparent 70%),
-    radial-gradient(52% 44% at 58% 94%, rgba(222,182,132,.16), transparent 72%),
-    radial-gradient(34% 30% at 6% 68%, rgba(155,46,34,.08), transparent 70%);
-  background-size:260% 260%,240% 240%,280% 280%,220% 220%;
+    linear-gradient(160deg, rgba(255,255,255,.86), rgba(252,250,246,.62) 55%, rgba(247,244,238,.78));
+  -webkit-backdrop-filter:blur(22px) saturate(1.35);
+  backdrop-filter:blur(22px) saturate(1.35);
+  box-shadow:10px 0 40px rgba(20,20,18,.14),
+             inset 0 0 0 .5px rgba(255,255,255,.75),
+             inset 1px 0 0 rgba(255,255,255,.9);
+}
+/* 内部液体折射层 */
+.drawer-panel::before{
+  content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;overflow:hidden;
+  background:
+    radial-gradient(58% 44% at 30% 14%, rgba(192,58,43,.20), transparent 70%),
+    radial-gradient(46% 38% at 86% 40%, rgba(106,143,90,.16), transparent 70%),
+    radial-gradient(56% 48% at 56% 96%, rgba(222,182,132,.24), transparent 72%),
+    radial-gradient(40% 34% at 4% 66%, rgba(155,46,34,.10), transparent 70%),
+    radial-gradient(90% 60% at 50% 108%, rgba(255,255,255,.65), transparent 60%);
+  background-size:250% 250%,230% 230%,270% 270%,210% 210%,100% 100%;
   background-repeat:no-repeat;
-  filter:blur(16px);
-  animation:liquidDrawer 26s ease-in-out infinite alternate;
+  filter:blur(12px);
+  animation:lgDrawer 24s ease-in-out infinite alternate;
   animation-play-state:paused;
 }
 .drawer.open .drawer-panel::before{animation-play-state:running}
-@keyframes liquidDrawer{
-  0%{background-position:0% 0%,100% 0%,60% 100%,20% 70%}
-  32%{background-position:60% 60%,70% 90%,10% 35%,90% 20%}
-  66%{background-position:100% 40%,15% 60%,90% 8%,40% 90%}
-  100%{background-position:50% 100%,10% 90%,100% 55%,5% 40%}
+@keyframes lgDrawer{
+  0%{background-position:0% 0%,100% 0%,60% 100%,20% 70%,50% 108%}
+  32%{background-position:60% 60%,70% 90%,10% 35%,90% 20%,50% 108%}
+  66%{background-position:100% 40%,15% 60%,90% 8%,40% 90%,50% 108%}
+  100%{background-position:50% 100%,10% 90%,100% 55%,5% 40%,50% 108%}
 }
+/* 镜面高光扫过（液态玻璃的反光带） */
+.drawer-panel::after{
+  content:'';position:absolute;top:-20%;bottom:-20%;left:0;width:34%;z-index:0;
+  background:linear-gradient(105deg, transparent 0%, rgba(255,255,255,0) 38%,
+              rgba(255,255,255,.55) 50%, rgba(255,255,255,0) 62%, transparent 100%);
+  filter:blur(6px);
+  pointer-events:none;
+  transform:translateX(-160%) skewX(-10deg);
+  animation:lgSheen 7.5s cubic-bezier(.45,.05,.25,1) infinite;
+}
+.drawer.open .drawer-panel::after{animation-play-state:running}
+.drawer-panel::after{animation-play-state:paused}
+.drawer.open .drawer-panel::after{animation-play-state:running}
+@keyframes lgSheen{
+  0%{transform:translateX(-180%) skewX(-12deg)}
+  58%{transform:translateX(380%) skewX(-12deg)}
+  100%{transform:translateX(420%) skewX(-12deg)}
+}
+.drawer-panel>*{position:relative;z-index:1}
 
-/* ---- AI 聊天浮层：面板浅液流 + 顶部呼吸光 ---- */
-.ai-sheet{isolation:isolate}
-.ai-sheet::before{
-  content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;
+/* ================= AI 聊天浮层：液态玻璃面板 ================= */
+.ai-sheet{
+  isolation:isolate;
   background:
-    radial-gradient(46% 32% at 20% 10%, rgba(192,58,43,.14), transparent 72%),
-    radial-gradient(38% 28% at 86% 32%, rgba(222,182,132,.15), transparent 72%),
-    radial-gradient(48% 34% at 62% 98%, rgba(106,143,90,.11), transparent 72%),
-    radial-gradient(30% 24% at 4% 80%, rgba(155,46,34,.07), transparent 70%);
-  background-size:250% 250%,230% 230%,260% 260%,210% 210%;
+    linear-gradient(165deg, rgba(255,255,255,.88), rgba(252,250,246,.66) 45%, rgba(248,245,240,.80));
+  -webkit-backdrop-filter:blur(24px) saturate(1.35);
+  backdrop-filter:blur(24px) saturate(1.35);
+  box-shadow:0 -18px 60px rgba(20,20,18,.14),
+             inset 0 1px 0 rgba(255,255,255,.85),
+             inset 0 0 0 .5px rgba(255,255,255,.6);
+}
+.ai-sheet::before{
+  content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;overflow:hidden;
+  background:
+    radial-gradient(50% 34% at 18% 8%, rgba(192,58,43,.18), transparent 72%),
+    radial-gradient(40% 30% at 88% 30%, rgba(222,182,132,.20), transparent 72%),
+    radial-gradient(52% 36% at 64% 100%, rgba(106,143,90,.14), transparent 72%),
+    radial-gradient(34% 26% at 2% 78%, rgba(155,46,34,.09), transparent 70%),
+    radial-gradient(80% 46% at 50% -6%, rgba(255,255,255,.55), transparent 60%);
+  background-size:240% 240%,220% 220%,250% 250%,200% 200%,100% 100%;
   background-repeat:no-repeat;
-  filter:blur(16px);
-  animation:liquidSheet 22s ease-in-out infinite alternate;
+  filter:blur(12px);
+  animation:lgSheet 20s ease-in-out infinite alternate;
 }
-@keyframes liquidSheet{
-  0%{background-position:0% 0%,100% 0%,50% 100%,0% 60%}
-  35%{background-position:55% 60%,60% 95%,10% 30%,85% 18%}
-  68%{background-position:100% 42%,12% 55%,90% 10%,42% 92%}
-  100%{background-position:45% 100%,5% 88%,100% 60%,12% 38%}
+@keyframes lgSheet{
+  0%{background-position:0% 0%,100% 0%,50% 100%,0% 60%,50% -6%}
+  32%{background-position:55% 55%,62% 100%,10% 30%,88% 15%,50% -6%}
+  66%{background-position:100% 40%,12% 55%,92% 10%,40% 92%,50% -6%}
+  100%{background-position:45% 100%,5% 88%,100% 62%,12% 38%,50% -6%}
 }
-/* 顶栏渐变带上叠一层液态微光 */
+/* 镜面高光扫过 */
+.ai-sheet::after{
+  content:'';position:absolute;top:-12%;bottom:-12%;left:0;width:30%;z-index:0;
+  background:linear-gradient(100deg, transparent 0%, rgba(255,255,255,0) 38%,
+              rgba(255,255,255,.5) 50%, rgba(255,255,255,0) 62%, transparent 100%);
+  filter:blur(5px);pointer-events:none;
+  transform:translateX(-170%) skewX(-10deg);
+  animation:lgSheenAI 8s cubic-bezier(.45,.05,.25,1) infinite;
+}
+@keyframes lgSheenAI{
+  0%{transform:translateX(-190%) skewX(-10deg)}
+  55%{transform:translateX(390%) skewX(-10deg)}
+  100%{transform:translateX(420%) skewX(-10deg)}
+}
+.ai-sheet>*{position:relative;z-index:1}
+
+/* ---- AI 顶部渐变带：叠液态微光（保留原渐变） ---- */
 .ai-hd{position:relative;overflow:hidden}
 .ai-hd::before{
   content:'';position:absolute;inset:-40% 0;z-index:0;pointer-events:none;
   background:
-    radial-gradient(30% 55% at 25% 50%, rgba(192,58,43,.13), transparent 70%),
-    radial-gradient(24% 48% at 75% 40%, rgba(216,180,140,.10), transparent 72%);
-  background-size:240% 240%,220% 220%;
+    radial-gradient(32% 58% at 22% 52%, rgba(192,58,43,.16), transparent 70%),
+    radial-gradient(26% 48% at 78% 38%, rgba(222,182,132,.14), transparent 72%);
+  background-size:230% 230%,210% 210%;
   background-repeat:no-repeat;
-  filter:blur(14px);
-  animation:liquidHd 18s ease-in-out infinite alternate;
+  filter:blur(10px);
+  animation:lgHd 16s ease-in-out infinite alternate;
 }
 .ai-hd>*{position:relative;z-index:1}
-@keyframes liquidHd{
+@keyframes lgHd{
   0%{background-position:0% 50%,100% 40%}
-  50%{background-position:80% 10%,20% 90%}
-  100%{background-position:30% 95%,90% 10%}
+  50%{background-position:80% 8%,18% 92%}
+  100%{background-position:30% 96%,92% 8%}
 }
 
 /* ---- 会话气泡进入时的轻微浮起（克制） ---- */
@@ -585,6 +643,6 @@ body::before{
 @keyframes msgIn{from{opacity:0;transform:translateY(9px) scale(.985)}to{opacity:1;transform:none}}
 
 @media (prefers-reduced-motion:reduce){
-  body::before,.city-hero::after,.drawer-panel::before,.ai-sheet::before,.ai-hd::before,
-  .ai-chat .msg{animation:none!important}
+  body::before,.city-hero::after,.drawer-panel::before,.drawer-panel::after,
+  .ai-sheet::before,.ai-sheet::after,.ai-hd::before,.ai-chat .msg{animation:none!important}
 }
