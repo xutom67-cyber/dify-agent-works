@@ -2,6 +2,9 @@
 .DS_Store
 *.swp
 
+# 本地样式备份（不入库）
+style_backup_*.css
+
 # 凭证 / 密钥（绝不提交）
 *.conf
 !**/私有*.md

@@ -468,3 +468,123 @@ body{
 .pc-opt.on{border-color:var(--brand);color:var(--brand);background:var(--brand-soft);font-weight:600}
 .pc-opt.sw{width:30px;height:30px;border-radius:50%;padding:0;box-shadow:inset 0 0 0 2px #fff,var(--sh)}
 .pc-opt.sw.on{outline:3px solid var(--brand);outline-offset:1px;border-color:transparent}
+
+/* ============================================================
+   液态流动 · Liquid Flow（只动视觉，不改排版/HTML）
+   多层低饱和光斑缓慢漂移，形成液体/极光流动质感
+   ============================================================ */
+
+/* ---- 进入整页背景：极淡液体氛围 ---- */
+body{position:relative;isolation:isolate;background:linear-gradient(160deg,var(--paper),#f4f2ee 55%,#efede8)}
+body::before{
+  content:'';position:fixed;inset:-20%;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(30% 34% at 22% 26%, rgba(192,58,43,.10), transparent 70%),
+    radial-gradient(26% 30% at 78% 18%, rgba(106,143,90,.08), transparent 70%),
+    radial-gradient(34% 38% at 62% 82%, rgba(216,172,120,.10), transparent 72%),
+    radial-gradient(24% 28% at 12% 74%, rgba(155,46,34,.06), transparent 72%);
+  background-size:250% 250%,230% 230%,270% 270%,240% 240%;
+  background-repeat:no-repeat;
+  filter:blur(10px);
+  animation:liquidBody 34s ease-in-out infinite alternate;
+}
+@keyframes liquidBody{
+  0%{background-position:0% 0%,100% 0%,50% 100%,0% 60%}
+  28%{background-position:45% 55%,70% 90%,12% 30%,90% 25%}
+  55%{background-position:100% 45%,20% 45%,78% 8%,35% 92%}
+  100%{background-position:55% 100%,8% 88%,100% 60%,15% 45%}
+}
+
+/* ---- 开场进入背景：城市照片上叠加流动的液体极光 ---- */
+.city-hero{isolation:isolate}
+.city-hero::after{
+  content:'';position:absolute;inset:-12% -6%;z-index:2;pointer-events:none;
+  background:
+    radial-gradient(38% 52% at 26% 36%, rgba(192,58,43,.38), transparent 70%),
+    radial-gradient(32% 44% at 80% 20%, rgba(106,143,90,.30), transparent 70%),
+    radial-gradient(44% 58% at 60% 92%, rgba(222,182,132,.42), transparent 72%),
+    radial-gradient(30% 42% at 10% 74%, rgba(160,116,180,.20), transparent 70%);
+  background-size:280% 280%,260% 260%,300% 300%,250% 250%;
+  background-repeat:no-repeat;
+  filter:blur(22px);
+  mix-blend-mode:soft-light;
+  animation:liquidHero 24s ease-in-out infinite alternate;
+}
+@keyframes liquidHero{
+  0%{background-position:0% 0%,100% 0%,50% 100%,0% 50%}
+  30%{background-position:50% 70%,60% 100%,8% 25%,85% 15%}
+  62%{background-position:100% 35%,18% 55%,85% 10%,40% 95%}
+  100%{background-position:45% 100%,5% 92%,100% 65%,10% 40%}
+}
+
+/* ---- 侧边隐藏栏：白卡上的浅液流光斑 ---- */
+.drawer-panel{isolation:isolate}
+.drawer-panel::before{
+  content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(50% 40% at 28% 16%, rgba(192,58,43,.14), transparent 70%),
+    radial-gradient(42% 36% at 84% 42%, rgba(106,143,90,.12), transparent 70%),
+    radial-gradient(52% 44% at 58% 94%, rgba(222,182,132,.16), transparent 72%),
+    radial-gradient(34% 30% at 6% 68%, rgba(155,46,34,.08), transparent 70%);
+  background-size:260% 260%,240% 240%,280% 280%,220% 220%;
+  background-repeat:no-repeat;
+  filter:blur(16px);
+  animation:liquidDrawer 26s ease-in-out infinite alternate;
+  animation-play-state:paused;
+}
+.drawer.open .drawer-panel::before{animation-play-state:running}
+@keyframes liquidDrawer{
+  0%{background-position:0% 0%,100% 0%,60% 100%,20% 70%}
+  32%{background-position:60% 60%,70% 90%,10% 35%,90% 20%}
+  66%{background-position:100% 40%,15% 60%,90% 8%,40% 90%}
+  100%{background-position:50% 100%,10% 90%,100% 55%,5% 40%}
+}
+
+/* ---- AI 聊天浮层：面板浅液流 + 顶部呼吸光 ---- */
+.ai-sheet{isolation:isolate}
+.ai-sheet::before{
+  content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(46% 32% at 20% 10%, rgba(192,58,43,.14), transparent 72%),
+    radial-gradient(38% 28% at 86% 32%, rgba(222,182,132,.15), transparent 72%),
+    radial-gradient(48% 34% at 62% 98%, rgba(106,143,90,.11), transparent 72%),
+    radial-gradient(30% 24% at 4% 80%, rgba(155,46,34,.07), transparent 70%);
+  background-size:250% 250%,230% 230%,260% 260%,210% 210%;
+  background-repeat:no-repeat;
+  filter:blur(16px);
+  animation:liquidSheet 22s ease-in-out infinite alternate;
+}
+@keyframes liquidSheet{
+  0%{background-position:0% 0%,100% 0%,50% 100%,0% 60%}
+  35%{background-position:55% 60%,60% 95%,10% 30%,85% 18%}
+  68%{background-position:100% 42%,12% 55%,90% 10%,42% 92%}
+  100%{background-position:45% 100%,5% 88%,100% 60%,12% 38%}
+}
+/* 顶栏渐变带上叠一层液态微光 */
+.ai-hd{position:relative;overflow:hidden}
+.ai-hd::before{
+  content:'';position:absolute;inset:-40% 0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(30% 55% at 25% 50%, rgba(192,58,43,.13), transparent 70%),
+    radial-gradient(24% 48% at 75% 40%, rgba(216,180,140,.10), transparent 72%);
+  background-size:240% 240%,220% 220%;
+  background-repeat:no-repeat;
+  filter:blur(14px);
+  animation:liquidHd 18s ease-in-out infinite alternate;
+}
+.ai-hd>*{position:relative;z-index:1}
+@keyframes liquidHd{
+  0%{background-position:0% 50%,100% 40%}
+  50%{background-position:80% 10%,20% 90%}
+  100%{background-position:30% 95%,90% 10%}
+}
+
+/* ---- 会话气泡进入时的轻微浮起（克制） ---- */
+.ai-chat .msg{animation:msgIn .5s cubic-bezier(.2,.7,.3,1) both}
+.ai-chat .msg:nth-child(odd){animation-delay:.06s}
+@keyframes msgIn{from{opacity:0;transform:translateY(9px) scale(.985)}to{opacity:1;transform:none}}
+
+@media (prefers-reduced-motion:reduce){
+  body::before,.city-hero::after,.drawer-panel::before,.ai-sheet::before,.ai-hd::before,
+  .ai-chat .msg{animation:none!important}
+}
