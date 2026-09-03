@@ -466,8 +466,8 @@ function renderSocial() {
     return `
     <div class="post">
       <div class="post-hd">
-        <div class="avatar" style="background:hsl(${avatarHue},44%,62%)">${note[0][0]}</div>
-        <div class="post-user">
+        <div class="avatar" style="background:hsl(${avatarHue},44%,62%);cursor:pointer" onclick="openUser('${note[0]}')">${note[0][0]}</div>
+        <div class="post-user" style="cursor:pointer" onclick="openUser('${note[0]}')">
           <div class="nm">${note[0]}</div>
           <div class="tm">${1 + i % 2} 小时前 · 同路人</div>
         </div>
@@ -1659,7 +1659,56 @@ function openCmt(id) {
   const b = FAV_BOOKS.find(x => x.id === id);
   if (b) localStorage.setItem('moyouBookTitle', b.title);
   buildCmt(id);
-  go('screen-cmt');
+  document.getElementById('cmtOverlay').classList.remove('hidden');
+}
+function closeCmt() {
+  document.getElementById('cmtOverlay').classList.add('hidden');
+}
+
+/* ============================================================
+   用户主页弹出层（从同路人/评论点开用户，展示其路书）
+   ============================================================ */
+const USER_PROFILES = {
+  '阿岚': { ava:'岚', sub:'Citywalk 摄影爱好者', city:'上海', tags:'建筑 · 咖啡 · 拍照', follow:32, fans:208, books:['sh2'] },
+  'K.':   { ava:'K', sub:'周末扫街 · 胡同迷', city:'北京', tags:'胡同 · 皇家 · 出片', follow:18, fans:156, books:['bj1'] },
+  '北北': { ava:'北', sub:'吃遍街头的本地通', city:'成都', tags:'美食 · 茶馆 · 慢生活', follow:27, fans:190, books:['cd1'] },
+  'Momo': { ava:'M', sub:'咖啡因驱动·城市漫游', city:'上海', tags:'咖啡 · 小店 · 散步', follow:9, fans:87, books:['sh1'] },
+  '耶加': { ava:'耶', sub:'跟着路书去打卡', city:'杭州', tags:'打卡 · 探店 · 出片', follow:5, fans:42, books:[] },
+};
+function openUser(name) {
+  const p = USER_PROFILES[name];
+  if (!p) return;
+  buildUser(name, p);
+  document.getElementById('userOverlay').classList.remove('hidden');
+}
+function closeUser() {
+  document.getElementById('userOverlay').classList.add('hidden');
+}
+function buildUser(name, p) {
+  document.getElementById('userTitle').textContent = name + ' · 个人主页';
+  const body = document.getElementById('userBody');
+  const books = p.books.map(id => FAV_BOOKS.find(b => b.id === id)).filter(Boolean);
+  body.innerHTML = `
+    <div class="user-pro">
+      <div class="u-ava" style="background:hsl(${(name.charCodeAt(0)*37)%360},44%,62%)">${p.ava}</div>
+      <div class="u-name">${name}</div>
+      <div class="u-sub">${p.sub}</div>
+      <div class="u-tags">${p.tags.split(' · ').map(t=>`<span>${t}</span>`).join('')}</div>
+      <div class="u-stats">
+        <button onclick="toast('关注列表')"><b>${p.follow}</b><span>关注</span></button>
+        <button onclick="toast('粉丝列表')"><b>${p.fans}</b><span>粉丝</span></button>
+        <button onclick="toast('TA 的路书')"><b>${books.length}</b><span>路书</span></button>
+      </div>
+    </div>
+    <div class="u-sec">TA 的路书</div>
+    <div class="u-books">
+      ${books.length ? books.map(b=>`
+        <button class="u-book" onclick="openBook('${b.id}')">
+          <img src="${b.cover}" alt="">
+          <div><b>${b.title}</b><span>${b.city} · ${b.when}</span><em>♥ ${b.like}</em></div>
+        </button>`).join('')
+      : `<div class="u-empty">TA 还没有公开路书</div>`}
+    </div>`;
 }
 function buildCmt(id) {
   const el = document.getElementById('cmtList');

@@ -329,21 +329,37 @@
         <div class="safe-bottom"></div>
       </section>
 
-      <!-- 评论页（路书评论列表 + 输入框，从下方弹出） -->
-      <section class="screen s-cmt" id="screen-cmt">
-        <header class="s-head">
-          <button class="back" onclick="closeCmt()">‹</button>
-          <div class="step-chip">评论</div>
-          <button class="hd-share" onclick="closeCmt()">收起</button>
-        </header>
+      <!-- 评论页（从下方弹出的小窗，与聊天界面同款液态玻璃） -->
+      <section class="screen s-cmt" id="screen-cmt" style="display:none"></section>
+
+    </div>
+
+    <!-- 评论小窗（与聊天界面同款，底部弹出） -->
+    <div class="cmt-overlay hidden" id="cmtOverlay">
+      <div class="cmt-sheet">
+        <span class="lg-refract" aria-hidden="true"></span>
+        <div class="cmt-hd">
+          <div class="ci-title"><span class="ci-ic">💬</span> 评论</div>
+          <button class="ai-close" onclick="closeCmt()">✕</button>
+        </div>
         <div class="cmt-list" id="cmtList"></div>
         <div class="cmt-inputbar">
           <div class="cmt-inputbox" contenteditable="true" id="cmtInput" data-ph="说说你的看法…"></div>
           <button class="cmt-send" onclick="sendCmt()"><span>发送</span></button>
         </div>
-        <div class="safe-bottom"></div>
-      </section>
+      </div>
+    </div>
 
+    <!-- 用户主页弹出层（从同路人/评论点开用户） -->
+    <div class="cmt-overlay hidden" id="userOverlay">
+      <div class="cmt-sheet">
+        <span class="lg-refract" aria-hidden="true"></span>
+        <div class="cmt-hd">
+          <div class="ci-title" id="userTitle">个人主页</div>
+          <button class="ai-close" onclick="closeUser()">✕</button>
+        </div>
+        <div class="user-body" id="userBody"></div>
+      </div>
     </div>
 
     <!-- 景点详情弹出层（可点开每个景点/标签） -->
