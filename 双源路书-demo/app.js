@@ -1584,11 +1584,11 @@ function buildBook(b) {
       <div><b>${b.photos.length}</b><span>打卡照片</span></div>
     </div>
     <div class="bk-photos">${b.photos.map(p=>`<img src="${p}" alt="">`).join('')}</div>
-    <div class="bk-route-h">◫ 游览路线</div>
+    <div class="bk-route-h">游览路线</div>
     <div class="bk-route">${b.route.map((r,i)=>`<div class="br-stop"><i>${i+1}</i><span>${r}</span></div>`).join('')}</div>
-    <div class="bk-route-h">🍽 吃喝玩乐</div>
+    <div class="bk-route-h">吃喝玩乐</div>
     <div class="bk-eat">${b.eat.replace('❤ ','')}</div>
-    <div class="bk-route-h">🕘 时间线</div>
+    <div class="bk-route-h">时间线</div>
     <div class="bk-timeline">
       ${stops.map((s,si)=>`<div class="bk-spot">
         <div class="bk-time">${s.t}</div>
@@ -1705,7 +1705,7 @@ function buildUser(name, p) {
       ${books.length ? books.map(b=>`
         <button class="u-book" onclick="openBook('${b.id}')">
           <img src="${b.cover}" alt="">
-          <div><b>${b.title}</b><span>${b.city} · ${b.when}</span><em>♥ ${b.like}</em></div>
+          <div><b>${b.title}</b><span>${b.city} · ${b.when}</span><em>♡ ${b.like}</em></div>
         </button>`).join('')
       : `<div class="u-empty">TA 还没有公开路书</div>`}
     </div>`;
@@ -1721,7 +1721,7 @@ function buildCmt(id) {
       <div class="cmt-item">
         <div class="ava" style="background:hsl(${(c.u.charCodeAt(0)*37)%360},40%,60%)">${c.a}</div>
         <div class="ci-b">
-          <div><b>${c.u}</b><span class="ci-lp">♥ ${c.lp}</span></div>
+          <div><b>${c.u}</b><span class="ci-lp">♡ ${c.lp}</span></div>
           <p>${c.c}</p>
         </div>
       </div>`).join('')}
@@ -1741,7 +1741,6 @@ function sendCmt() {
   toast('评论已发布');
 }
 function openBookCmt(id) { openCmt(id); }
-function closeCmt() { go('screen-book'); }
 
 /* ============================================================
    景点详情弹出层：每个景点/子标签都可点开
