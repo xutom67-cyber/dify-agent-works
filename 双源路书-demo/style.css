@@ -1016,3 +1016,65 @@ body::before{
 .footmap .fm-node text{font-family:var(--serif);font-size:3.6px;letter-spacing:.04em}
 .footmap-legend{margin-top:8px;padding-top:9px;border-top:1px solid var(--line);font-size:10.5px;color:var(--ink-faint);letter-spacing:.06em;text-align:center}
 .footmap-legend::before{content:'✦ ';color:var(--brand)}
+
+/* ============================================================
+   评论页
+   ============================================================ */
+.s-cmt{background:var(--paper);padding-bottom:0}
+.cmt-list{padding:10px 18px 90px}
+.cmt-sum{font-size:12.5px;color:var(--ink-soft);padding:8px 2px 14px;border-bottom:1px solid var(--line)}
+.cmt-sum b{color:var(--brand);font-weight:700}
+.cmt-item{display:flex;gap:11px;padding:14px 0;border-bottom:1px solid var(--line)}
+.cmt-item .ava{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;flex-shrink:0}
+.cmt-item .ci-b{flex:1}
+.cmt-item .ci-b>div{display:flex;align-items:center;gap:8px}
+.cmt-item .ci-b b{font-size:13px;font-weight:700;color:var(--ink)}
+.cmt-item .ci-lp{font-size:11px;color:var(--brand);font-weight:600}
+.cmt-item .ci-b p{font-size:12.5px;color:var(--ink-soft);line-height:1.65;margin-top:5px}
+.cmt-inputbar{position:fixed;left:0;right:0;bottom:0;display:flex;align-items:center;gap:10px;padding:12px 18px 26px;background:linear-gradient(180deg,rgba(250,250,248,0),var(--paper) 35%);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);z-index:30}
+.cmt-inputbox{flex:1;background:rgba(16,13,12,.6);border:1px solid rgba(192,58,43,.24);border-radius:16px;padding:12px 16px;font-size:13px;color:#fff;line-height:1.55;min-height:44px;backdrop-filter:blur(12px);transition:.15s}
+.cmt-inputbox:focus{border-color:var(--brand)}
+.cmt-inputbox[contenteditable]:empty:before{content:attr(data-ph);color:#9a9da2}
+.cmt-send{flex:0 0 auto;border:0;border-radius:14px;background:var(--brand);color:#fff;padding:13px 18px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 6px 18px rgba(192,58,43,.35);transition:.15s}
+.cmt-send:hover{transform:translateY(-1px)}
+
+/* ============================================================
+   景点详情弹出层 + 分类色卡
+   ============================================================ */
+.spot-overlay{position:fixed;inset:0;z-index:200;background:rgba(10,8,8,.55);display:flex;align-items:flex-end;justify-content:center;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.spot-overlay.hidden{display:none}
+.spot-sheet{width:100%;max-width:420px;background:var(--paper);border-radius:24px 24px 0 0;padding:20px 18px 30px;position:relative;max-height:78vh;overflow-y:auto;animation:sheetUp .32s cubic-bezier(.2,.7,.3,1);box-shadow:0 -18px 50px rgba(0,0,0,.4);
+  background:linear-gradient(168deg, rgba(255,255,255,.82), rgba(252,250,246,.62) 45%, rgba(248,245,240,.76));-webkit-backdrop-filter:blur(20px) saturate(1.4);backdrop-filter:blur(20px) saturate(1.4)}
+@keyframes sheetUp{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}
+.spot-close{position:absolute;top:14px;right:16px;width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:var(--card);font-size:14px;color:var(--ink);cursor:pointer;z-index:2}
+.spot-cover{width:100%;height:200px;border-radius:16px;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center}
+.spot-cover img{width:100%;height:100%;object-fit:cover}
+.spot-ph-icon{font-size:54px;color:#fff;opacity:.85;font-family:var(--serif)}
+.spot-hd{padding:16px 2px 4px}
+.spot-tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.08em;border-radius:999px;padding:3px 10px;margin-bottom:8px}
+.spot-hd h3{font-family:var(--serif);font-size:20px;font-weight:700;color:var(--ink)}
+.spot-type{font-size:12px;color:var(--ink-soft);margin-top:4px}
+.spot-rows{display:flex;flex-direction:column;gap:8px;margin:12px 0 16px}
+.spot-row{display:flex;align-items:baseline;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;box-shadow:var(--sh)}
+.spot-row span{font-size:11px;color:var(--ink-faint);letter-spacing:.06em;flex-shrink:0;min-width:44px}
+.spot-row b{font-size:13px;color:var(--ink);font-weight:600}
+.spot-row.wide b{line-height:1.6;font-weight:500}
+.spot-cta{width:100%;border:0;border-radius:14px;color:#fff;padding:14px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 8px 22px rgba(0,0,0,.18);transition:.15s}
+.spot-cta:hover{transform:translateY(-1px)}
+
+/* ============================================================
+   流体玻璃卡片（所有卡片统一为液态玻璃质感）
+   ============================================================ */
+.fav-card,.bk-spot-card,.bk-stats>div,.pf-card,.fc-cover{
+  -webkit-backdrop-filter:blur(16px) saturate(1.5);backdrop-filter:blur(16px) saturate(1.5);
+}
+.fav-card{position:relative;overflow:hidden;
+  background:linear-gradient(162deg, rgba(255,255,255,.78), rgba(252,250,246,.5) 48%, rgba(248,245,240,.62));}
+.fav-card:before,.bk-cover:before,.data-card:before{content:'';position:absolute;inset:-30%;pointer-events:none;z-index:1;opacity:.7;background:linear-gradient(120deg,transparent 22%,rgba(255,255,255,.5) 46%,rgba(255,255,255,.18) 54%,transparent 72%);transform:translateX(-60%);animation:glassSheen 6s ease-in-out infinite}
+.data-card{position:relative}
+.bk-cover{position:relative;overflow:hidden}
+@keyframes glassSheen{0%{transform:translateX(-60%)}55%{transform:translateX(60%)}100%{transform:translateX(60%)}}
+.bk-spot-card{position:relative;overflow:hidden;cursor:pointer;transition:.15s;
+  background:linear-gradient(165deg, rgba(255,255,255,.8), rgba(252,250,246,.55) 48%, rgba(248,245,240,.66))}
+.bk-spot-card:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(0,0,0,.14)}
+.bk-spot-card{border-color:rgba(255,255,255,.5)}

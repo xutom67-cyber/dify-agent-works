@@ -1482,7 +1482,7 @@ function buildFavs() {
       </div>
       <div class="fc-acts" onclick="event.stopPropagation()">
         <button class="act ${liked?'like on':''}" onclick="favLike('${b.id}',this)"><span class="a-ic">${ICONS.like}</span><em>${likes}</em></button>
-        <button class="act cmt" onclick="toast('评论功能演示')"><span class="a-ic">${ICONS.comment}</span><em>${b.cmt}</em></button>
+        <button class="act cmt" onclick="event.stopPropagation();openBookCmt('${b.id}')"><span class="a-ic">${ICONS.comment}</span><em>${b.cmt}</em></button>
         <button class="act" onclick="favCollect(this)"><span class="a-ic">${ICONS.bookmark}</span><em>收藏</em></button>
         <button class="act share" onclick="favShare('${b.title}')"><span class="a-ic">${ICONS.share}</span><em>分享</em></button>
       </div>
@@ -1590,12 +1590,12 @@ function buildBook(b) {
     <div class="bk-eat">${b.eat.replace('❤ ','')}</div>
     <div class="bk-route-h">🕘 时间线</div>
     <div class="bk-timeline">
-      ${stops.map(s=>`<div class="bk-spot">
+      ${stops.map((s,si)=>`<div class="bk-spot">
         <div class="bk-time">${s.t}</div>
-        <div class="bk-dot"></div>
-        <div class="bk-spot-card">
+        <div class="bk-dot" style="background:${spotColor(spotType(s)).c}"></div>
+        <div class="bk-spot-card" style="--spotc:${spotColor(spotType(s)).c};--spotbg:${spotColor(spotType(s)).bg}" onclick="openSpotByIndex('${b.id}',${si})">
           ${s.img?`<img src="${s.img}" alt="">`:''}
-          <div><b>${s.name}</b><span>${s.type}</span></div>
+          <div><span class="spot-tag" style="color:${spotColor(spotType(s)).c};background:${spotColor(spotType(s)).bg}">${spotColor(spotType(s)).name}</span><b>${s.name}</b><span>${s.type}</span></div>
           <em>${s.cost}</em>
           <p>${s.note}</p>
         </div>
@@ -1603,7 +1603,7 @@ function buildBook(b) {
     </div>`;
   if (acts) acts.innerHTML = `
     <button class="bk-act ${liked?'on':''}" onclick="favLike('${b.id}',this)"><span class="a-ic">${ICONS.like}</span>${likes}</button>
-    <button class="bk-act" onclick="toast('评论功能演示')"><span class="a-ic">${ICONS.comment}</span>${b.cmt}</button>
+    <button class="bk-act" onclick="openBookCmt('${b.id}')"><span class="a-ic">${ICONS.comment}</span>${b.cmt}</button>
     <button class="bk-act" onclick="favCollect(this)"><span class="a-ic">${ICONS.bookmark}</span>收藏</button>
     <button class="bk-act share" onclick="bookShare()"><span class="a-ic">${ICONS.share}</span>分享</button>`;
 }
@@ -1611,6 +1611,122 @@ function bookShare() {
   const b = FAV_BOOKS.find(x => x.id === currentBook);
   toast('已分享到社交媒体：' + (b ? b.title : '路书'));
 }
+
+/* ============================================================
+   分类：景点 / 餐饮 / 娱乐 / 打卡点 → 匹配不同卡片颜色
+   ============================================================ */
+const SPOT_COLORS = {
+  view:  { c:'#b5915a', bg:'rgba(181,145,90,.14)', name:'景点' },   // 琥珀 · 景点
+  food:  { c:'#c0392b', bg:'rgba(192,57,43,.12)', name:'餐饮' },    // 朱砂 · 餐饮
+  fun:   { c:'#6a8f5a', bg:'rgba(106,143,90,.16)', name:'娱乐' },   // 苔绿 · 娱乐
+  photo: { c:'#b04a6f', bg:'rgba(176,74,111,.14)', name:'打卡点' }, // 玫红 · 打卡
+};
+function spotType(s) {
+  const t = (s.type || '' ) + ' ' + (s.order || '') + ' ' + (s.name || '');
+  if (/咖啡|餐|酒|食|小酌|茶|小馆|甜|brunch|葡萄酒|威士忌|brunch/i.test(t)) return 'food';
+  if (/酒吧|演出|舞厅|live/i.test(t)) return 'fun';
+  if (/拍照|打卡|出片|机位|photo/i.test(t)) return 'photo';
+  return 'view';
+}
+function spotColor(type) { return SPOT_COLORS[type] || SPOT_COLORS.view; }
+
+/* ============================================================
+   评论页：路书的完整评论列表 + 发布
+   ============================================================ */
+let cmtBooks = {};  // 每本书的评论缓存
+const CMT_SEED = {
+  sh1: [
+    { u:'阿岚', a:'岚', c:'路线好顺！咖啡和建筑串起来走一点都不累', lp:12 },
+    { u:'K.',  a:'K',  c:'武康大楼那段拍得真好看，收藏了', lp:8 },
+    { u:'北北', a:'北', c:'消费不到700，划算，这周末照抄', lp:5 },
+  ],
+  sh2: [
+    { u:'沈听澜', a:'沈', c:'武康路出片yyds，老麦咖啡的院落太舒服了', lp:9 },
+    { u:'眠',   a:'眠', c:'机位攻略很实用，去了果然人多但也出片', lp:3 },
+  ],
+  bj1: [
+    { u:'阿岚', a:'岚', c:'国子监那站勾起回忆，琉璃瓦真好看', lp:6 },
+  ],
+  cd1: [
+    { u:'K.', a:'K', c:'盖碗茶配竹椅，成都的慢真的会上瘾', lp:11 },
+  ],
+};
+function openCmt(id) {
+  currentBook = id;
+  const b = FAV_BOOKS.find(x => x.id === id);
+  if (b) localStorage.setItem('moyouBookTitle', b.title);
+  buildCmt(id);
+  go('screen-cmt');
+}
+function buildCmt(id) {
+  const el = document.getElementById('cmtList');
+  if (!el) return;
+  const list = cmtBooks[id] || CMT_SEED[id] || [];
+  const b = FAV_BOOKS.find(x => x.id === id);
+  el.innerHTML = `
+    <div class="cmt-sum"><b>${list.length}</b> 条评论 · 《${b ? b.title : '路书'}》</div>
+    ${list.map(c=>`
+      <div class="cmt-item">
+        <div class="ava" style="background:hsl(${(c.u.charCodeAt(0)*37)%360},40%,60%)">${c.a}</div>
+        <div class="ci-b">
+          <div><b>${c.u}</b><span class="ci-lp">♥ ${c.lp}</span></div>
+          <p>${c.c}</p>
+        </div>
+      </div>`).join('')}
+  `;
+  const inp = document.getElementById('cmtInput');
+  if (inp) { inp.innerHTML = ''; }
+}
+function sendCmt() {
+  const inp = document.getElementById('cmtInput');
+  const v = (inp ? inp.textContent : '').trim();
+  if (!v) { toast('先写点什么吧'); return; }
+  const id = currentBook;
+  if (!cmtBooks[id]) cmtBooks[id] = (CMT_SEED[id] || []).map(c=>({...c}));
+  cmtBooks[id].push({ u:'沈听澜', a:'沈', c:v, lp:0 });
+  localStorage.setItem('moyouCmt_'+id, JSON.stringify(cmtBooks[id]));
+  buildCmt(id);
+  toast('评论已发布');
+}
+function openBookCmt(id) { openCmt(id); }
+
+/* ============================================================
+   景点详情弹出层：每个景点/子标签都可点开
+   ============================================================ */
+function openSpot(s) {
+  const type = spotType(s);
+  const sc = spotColor(type);
+  const ovl = document.getElementById('spotOverlay');
+  const body = document.getElementById('spotBody');
+  if (body) body.innerHTML = `
+    <div class="spot-cover" style="background:${sc.bg}">
+      ${s.img?`<img src="${s.img}" alt="">`:`<div class="spot-ph-icon">${s.name.slice(0,1)}</div>`}
+    </div>
+    <div class="spot-hd">
+      <span class="spot-tag" style="color:${sc.c};background:${sc.bg}">${sc.name}</span>
+      <h3>${s.name}</h3>
+      <div class="spot-type">${s.type || ''} · ${s.t || ''}</div>
+    </div>
+    <div class="spot-rows">
+      ${s.cost?`<div class="spot-row"><span>人均</span><b>¥${s.cost}</b></div>`:''}
+      ${(s.steps && s.steps!=='起')?`<div class="spot-row"><span>耗时</span><b>${s.steps.replace(/· /,'')}</b></div>`:''}
+      ${s.note?`<div class="spot-row wide"><span>一句话</span><b>${s.note}</b></div>`:''}
+    </div>
+    <button class="spot-cta" style="background:${sc.c}" onclick="addSpotToRoute('${s.name}')">加进我的路书</button>`;
+  ovl.classList.remove('hidden');
+}
+function openSpotByIndex(bid, idx) {
+  const stops = BOOK_DETAIL[bid] || [];
+  if (stops[idx]) openSpot(stops[idx]);
+}
+function closeSpot(e) {
+  if (e && e.target && e.target.id !== 'spotOverlay' && e.target.classList && !e.target.classList.contains('spot-overlay')) {
+    // 只有点遮罩外部才关闭（点sheet内部不关）
+    if (!e.target.closest('.spot-sheet')) return;
+  }
+  document.getElementById('spotOverlay').classList.add('hidden');
+}
+function addSpotToRoute(n) { toast('已把「' + n + '」加进你的路书 · 演示'); closeSpot(); }
 
 /* ============================================================
    用户主页 · 足迹地图（去过的城市标记 + 连线）

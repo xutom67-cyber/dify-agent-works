@@ -329,6 +329,28 @@
         <div class="safe-bottom"></div>
       </section>
 
+      <!-- 评论页（路书评论列表 + 输入框） -->
+      <section class="screen s-cmt" id="screen-cmt">
+        <header class="s-head">
+          <button class="back" onclick="go('screen-book')">‹</button>
+          <div class="step-chip">评论</div>
+        </header>
+        <div class="cmt-list" id="cmtList"></div>
+        <div class="cmt-inputbar">
+          <div class="cmt-inputbox" contenteditable="true" id="cmtInput" data-ph="说说你的看法…"></div>
+          <button class="cmt-send" onclick="sendCmt()"><span>发送</span></button>
+        </div>
+        <div class="safe-bottom"></div>
+      </section>
+
+    </div>
+
+    <!-- 景点详情弹出层（可点开每个景点/标签） -->
+    <div class="spot-overlay hidden" id="spotOverlay" onclick="closeSpot(event)">
+      <div class="spot-sheet">
+        <button class="spot-close" onclick="closeSpot()">✕</button>
+        <div id="spotBody"></div>
+      </div>
     </div>
 
     <div class="toast" id="toast"></div>
