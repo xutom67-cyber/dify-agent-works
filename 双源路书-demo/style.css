@@ -471,8 +471,9 @@ body{
 
 /* ============================================================
    液态玻璃 · Liquid Glass（只动视觉，不改排版/HTML）
-   半透明磨砂玻璃面板 + 内部折射光斑 + 镜面高光扫过
+   半透明磨砂玻璃面板 + 折射扭曲 + 内部光斑 + 镜面高光扫过
    ============================================================ */
+.lg-hidden{position:absolute;width:0;height:0;overflow:hidden;pointer-events:none}
 body{position:relative;isolation:isolate;background:linear-gradient(160deg,#f7f5f1,#efece6 55%,#eae6df)}
 
 /* ================= 进入整页背景：液体氛围 + 微光斑 ================= */
@@ -521,14 +522,28 @@ body::before{
 
 /* ================= 侧边隐藏栏：液态玻璃面板 ================= */
 .drawer-panel{
-  isolation:isolate;overflow:hidden;
+  isolation:isolate;overflow:hidden;position:relative;
   background:
-    linear-gradient(160deg, rgba(255,255,255,.86), rgba(252,250,246,.62) 55%, rgba(247,244,238,.78));
-  -webkit-backdrop-filter:blur(22px) saturate(1.35);
-  backdrop-filter:blur(22px) saturate(1.35);
+    linear-gradient(160deg, rgba(255,255,255,.82), rgba(252,250,246,.58) 55%, rgba(247,244,238,.74));
+  -webkit-backdrop-filter:blur(18px) saturate(1.4);
+  backdrop-filter:blur(18px) saturate(1.4);
   box-shadow:10px 0 40px rgba(20,20,18,.14),
-             inset 0 0 0 .5px rgba(255,255,255,.75),
-             inset 1px 0 0 rgba(255,255,255,.9);
+             inset 0 0 0 .5px rgba(255,255,255,.8),
+             inset 1px 0 0 rgba(255,255,255,.95);
+}
+/* 玻璃内芯：折射扭曲层 —— 让背景光透过玻璃产生弯曲/流动（液态玻璃的灵魂） */
+.drawer-panel .lg-refract{
+  position:absolute;inset:-24px;z-index:-2;pointer-events:none;
+  background:inherit; /* 采样面板背后的场景 */
+  filter:url(#lg-refract);
+  animation:lgRefractDrift 26s ease-in-out infinite alternate;
+  animation-play-state:paused;
+}
+.drawer.open .drawer-panel .lg-refract{animation-play-state:running}
+@keyframes lgRefractDrift{
+  0%{transform:translate(0,0) scale(1.04)}
+  50%{transform:translate(-4px,3px) scale(1.05)}
+  100%{transform:translate(3px,-3px) scale(1.04)}
 }
 /* 内部液体折射层 */
 .drawer-panel::before{
@@ -536,12 +551,12 @@ body::before{
   background:
     radial-gradient(58% 44% at 30% 14%, rgba(192,58,43,.20), transparent 70%),
     radial-gradient(46% 38% at 86% 40%, rgba(106,143,90,.16), transparent 70%),
-    radial-gradient(56% 48% at 56% 96%, rgba(222,182,132,.24), transparent 72%),
+    radial-gradient(56% 48% at 56% 96%, rgba(222,182,132,.26), transparent 72%),
     radial-gradient(40% 34% at 4% 66%, rgba(155,46,34,.10), transparent 70%),
-    radial-gradient(90% 60% at 50% 108%, rgba(255,255,255,.65), transparent 60%);
+    radial-gradient(90% 60% at 50% 108%, rgba(255,255,255,.7), transparent 60%);
   background-size:250% 250%,230% 230%,270% 270%,210% 210%,100% 100%;
   background-repeat:no-repeat;
-  filter:blur(12px);
+  filter:blur(10px);
   animation:lgDrawer 24s ease-in-out infinite alternate;
   animation-play-state:paused;
 }
@@ -556,7 +571,7 @@ body::before{
 .drawer-panel::after{
   content:'';position:absolute;top:-20%;bottom:-20%;left:0;width:34%;z-index:0;
   background:linear-gradient(105deg, transparent 0%, rgba(255,255,255,0) 38%,
-              rgba(255,255,255,.55) 50%, rgba(255,255,255,0) 62%, transparent 100%);
+              rgba(255,255,255,.6) 50%, rgba(255,255,255,0) 62%, transparent 100%);
   filter:blur(6px);
   pointer-events:none;
   transform:translateX(-160%) skewX(-10deg);
@@ -571,29 +586,42 @@ body::before{
   100%{transform:translateX(420%) skewX(-12deg)}
 }
 .drawer-panel>*{position:relative;z-index:1}
+.drawer-panel .dr-user,.drawer-panel .dr-loc,.drawer-panel .dr-themes,
+.drawer-panel .dr-hist,.drawer-panel .dr-foot{position:relative}
 
 /* ================= AI 聊天浮层：液态玻璃面板 ================= */
 .ai-sheet{
-  isolation:isolate;
+  isolation:isolate;position:relative;overflow:hidden;
   background:
-    linear-gradient(165deg, rgba(255,255,255,.88), rgba(252,250,246,.66) 45%, rgba(248,245,240,.80));
-  -webkit-backdrop-filter:blur(24px) saturate(1.35);
-  backdrop-filter:blur(24px) saturate(1.35);
+    linear-gradient(165deg, rgba(255,255,255,.84), rgba(252,250,246,.60) 45%, rgba(248,245,240,.76));
+  -webkit-backdrop-filter:blur(20px) saturate(1.4);
+  backdrop-filter:blur(20px) saturate(1.4);
   box-shadow:0 -18px 60px rgba(20,20,18,.14),
-             inset 0 1px 0 rgba(255,255,255,.85),
-             inset 0 0 0 .5px rgba(255,255,255,.6);
+             inset 0 1px 0 rgba(255,255,255,.9),
+             inset 0 0 0 .5px rgba(255,255,255,.65);
+}
+/* 玻璃内芯：折射扭曲层 */
+.ai-sheet .lg-refract{
+  position:absolute;inset:-24px;z-index:-2;pointer-events:none;
+  background:inherit;filter:url(#lg-refract);
+  animation:lgRefractDriftAI 24s ease-in-out infinite alternate;
+}
+@keyframes lgRefractDriftAI{
+  0%{transform:translate(0,0) scale(1.04)}
+  50%{transform:translate(3px,-4px) scale(1.05)}
+  100%{transform:translate(-3px,2px) scale(1.04)}
 }
 .ai-sheet::before{
   content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;overflow:hidden;
   background:
     radial-gradient(50% 34% at 18% 8%, rgba(192,58,43,.18), transparent 72%),
-    radial-gradient(40% 30% at 88% 30%, rgba(222,182,132,.20), transparent 72%),
+    radial-gradient(40% 30% at 88% 30%, rgba(222,182,132,.22), transparent 72%),
     radial-gradient(52% 36% at 64% 100%, rgba(106,143,90,.14), transparent 72%),
     radial-gradient(34% 26% at 2% 78%, rgba(155,46,34,.09), transparent 70%),
-    radial-gradient(80% 46% at 50% -6%, rgba(255,255,255,.55), transparent 60%);
+    radial-gradient(80% 46% at 50% -6%, rgba(255,255,255,.6), transparent 60%);
   background-size:240% 240%,220% 220%,250% 250%,200% 200%,100% 100%;
   background-repeat:no-repeat;
-  filter:blur(12px);
+  filter:blur(10px);
   animation:lgSheet 20s ease-in-out infinite alternate;
 }
 @keyframes lgSheet{
@@ -606,7 +634,7 @@ body::before{
 .ai-sheet::after{
   content:'';position:absolute;top:-12%;bottom:-12%;left:0;width:30%;z-index:0;
   background:linear-gradient(100deg, transparent 0%, rgba(255,255,255,0) 38%,
-              rgba(255,255,255,.5) 50%, rgba(255,255,255,0) 62%, transparent 100%);
+              rgba(255,255,255,.55) 50%, rgba(255,255,255,0) 62%, transparent 100%);
   filter:blur(5px);pointer-events:none;
   transform:translateX(-170%) skewX(-10deg);
   animation:lgSheenAI 8s cubic-bezier(.45,.05,.25,1) infinite;
@@ -644,5 +672,6 @@ body::before{
 
 @media (prefers-reduced-motion:reduce){
   body::before,.city-hero::after,.drawer-panel::before,.drawer-panel::after,
-  .ai-sheet::before,.ai-sheet::after,.ai-hd::before,.ai-chat .msg{animation:none!important}
+  .drawer-panel .lg-refract,.ai-sheet::before,.ai-sheet::after,.ai-sheet .lg-refract,
+  .ai-hd::before,.ai-chat .msg{animation:none!important}
 }
