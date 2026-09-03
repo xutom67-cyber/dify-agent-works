@@ -1389,3 +1389,126 @@ function initCubeScene() {
   }
   tick();
 }
+
+/* ============================================================
+   路书广场（自己的 + 大家的）+ 用户主页
+   ============================================================ */
+function spotImg(id) {
+  const sp = M.cities.flatMap(c => c.days.flatMap(d => d.spots)).find(s => s.id === id);
+  return sp ? (sp.img || '') : '';
+}
+// 路书数据集：封面图取自城市景点，含打卡照片、路线、步数、消费
+const FAV_BOOKS = [
+  {
+    id:'sh1', user:'沈听澜', ava:'☺', city:'上海', title:'梧桐 · 微醺建筑两天', when:'9 月 1 日',
+    cover: spotImg('sh-d2-2'), photos:['images/pudao.jpg','images/pudao.jpg','images/wukang.jpg'],
+    route:['愚园路小店','百乐门','武康大楼','老麦咖啡','葡道'],
+    eat:'❤ 白日清澄 · 老麦咖啡 · 葡道', steps:'24,680 步', cost:'¥ 682',
+    like:128, cmt:9, liked:false, mine:true, desc:'把梧桐区走成一条线，转角都有惊喜。',
+  },
+  {
+    id:'sh2', user:'阿岚', ava:'岚', city:'上海', title:'武康路出片路线', when:'昨天',
+    cover: spotImg('sh-d2-2'), photos:['images/wukang.jpg','images/laomai.jpg'],
+    route:['武康大楼','老麦咖啡','安福路'], eat:'❤ 老麦咖啡 · 弄堂小馆',
+    steps:'12,310 步', cost:'¥ 245', like:86, cmt:7, liked:false, mine:false, desc:'拍完武康大楼转角，一整天都是好图。',
+  },
+  {
+    id:'bj1', user:'K.', ava:'K', city:'北京', title:'红墙 · 胡同深处', when:'8 月 24 日',
+    cover: spotImg('bj-d1-4'), photos:['images/bj_jingshan.jpg','images/bj_nanluoguxiang.jpg'],
+    route:['南锣鼓巷','国子监','五道营','景山'], eat:'❤ 胡同咖啡馆 · 小吃',
+    steps:'18,540 步', cost:'¥ 260', like:54, cmt:3, liked:false, mine:false, desc:'从胡同的烟火到景山的中轴，一天看尽北京。',
+  },
+  {
+    id:'cd1', user:'北北', ava:'北', city:'成都', title:'盖碗 · 慢半天', when:'8 月 12 日',
+    cover: spotImg('cd-d1-2'), photos:['images/cd_renmingongyuan.jpg','images/cd_heming.jpg'],
+    route:['宽窄巷子','人民公园','鹤鸣茶社'], eat:'❤ 盖碗茶 · 苍蝇馆子',
+    steps:'9,860 步', cost:'¥ 128', like:73, cmt:5, liked:false, mine:false, desc:'把日子过成茶，一口一口地慢。',
+  },
+];
+let favMode = 'all';
+let favLikeState = {};
+function openProfile() {
+  closeDrawer(); buildProfile(); go('screen-profile');
+}
+function openFavs(mode) {
+  closeDrawer(); favMode = mode; buildFavs(); go('screen-favs');
+}
+function switchFavs(mode) {
+  favMode = mode; buildFavs();
+}
+function buildFavs() {
+  const title = document.getElementById('favsTitle');
+  const list = document.getElementById('favsList');
+  const tabAll = document.getElementById('favtab-all');
+  const tabMine = document.getElementById('favtab-mine');
+  if (title) title.textContent = favMode === 'mine' ? '📌 我的路书' : '🌐 大家的路书';
+  if (tabAll) tabAll.classList.toggle('on', favMode === 'all');
+  if (tabMine) tabMine.classList.toggle('on', favMode === 'mine');
+  if (!list) return;
+  const books = FAV_BOOKS.filter(b => favMode === 'mine' ? b.mine : true);
+  list.innerHTML = books.map(b => {
+    const liked = favLikeState[b.id] ?? b.liked;
+    const likes = (favLikeState[b.id] ? b.like + 1 : b.like);
+    return `
+    <article class="fav-card">
+      <div class="fc-hd">
+        <div class="ava" style="background:hsl(${(b.user.charCodeAt(0)*37)%360},44%,62%)">${b.ava}</div>
+        <div class="fc-user"><div class="nm">${b.user}</div><div class="tm">${b.when} · ${b.city}</div></div>
+        <button class="follow" onclick="favFollow(this)">＋关注</button>
+      </div>
+      <div class="fc-cover"><img src="${b.cover}" alt="${b.title}"><div class="fc-title"><b>${b.title}</b>${b.city}</div></div>
+      <div class="fc-desc">${b.desc}</div>
+      <div class="fc-photos">${b.photos.slice(0,3).map(p=>`<img src="${p}" alt="">`).join('')}</div>
+      <div class="fc-route"><span class="r-ic">◫</span>${b.route.join(' · ')}</div>
+      <div class="fc-meta">
+        <div class="fm"><span>吃喝玩乐</span><em>${b.eat.replace('❤ ','')}</em></div>
+        <div class="fm"><span>打卡照片</span><em>${b.photos.length} 张</em></div>
+        <div class="fm"><span>行走步数</span><em>${b.steps}</em></div>
+        <div class="fm"><span>消费金额</span><em>${b.cost}</em></div>
+      </div>
+      <div class="fc-acts">
+        <button class="act ${liked?'like on':''}" onclick="favLike('${b.id}',this)"><span class="a-ic">${liked?'♥':'♡'}</span><em>${likes}</em></button>
+        <button class="act cmt" onclick="toast('评论功能演示')"><span class="a-ic">✎</span><em>${b.cmt}</em></button>
+        <button class="act" onclick="favCollect(this)"><span class="a-ic">🔖</span><em>收藏</em></button>
+        <button class="act share" onclick="favShare('${b.title}')"><span class="a-ic">↗</span><em>分享</em></button>
+      </div>
+    </article>`;
+  }).join('');
+}
+function favLike(id, el) {
+  favLikeState[id] = !favLikeState[id];
+  buildFavs();
+}
+function favCollect(el) {
+  el.classList.toggle('on');
+  const t = el.querySelector('em'); if (t) t.textContent = el.classList.contains('on') ? '已收藏' : '收藏';
+}
+function favShare(title) {
+  toast('已分享到社交媒体：' + title);
+}
+function favFollow(el) {
+  el.classList.toggle('on'); el.textContent = el.classList.contains('on') ? '已关注' : '＋关注';
+}
+// 用户主页
+const ME = { name:'沈听澜', sub:'走遍城市的旅人 · 同济大学建筑系', city:'上海',
+  follow:86, fans:342, favs:6, mine:4,
+  base:[['所在地','上海'],['职业','建筑 · 数字人文'],['爱好','Citywalk · 建筑 · 咖啡'],['加入','2024 年']] };
+function buildProfile() {
+  const hd = document.getElementById('profileHd');
+  const stats = document.getElementById('profileStats');
+  const favs = document.getElementById('profileFavs');
+  const mine = document.getElementById('profileMine');
+  if (hd) hd.innerHTML = `
+    <div class="pf-ava">✧</div>
+    <div class="pf-name">${ME.name}<span class="pf-tag">Lv.3 · 汾阳乐迷</span></div>
+    <div class="pf-sub">${ME.sub}</div>
+    <div class="pf-base">${ME.base.map(x=>`<span><b>${x[0]}</b> ${x[1]}</span>`).join('')}</div>`;
+  if (stats) stats.innerHTML = `
+    <button onclick="toast('关注列表')"><b>${ME.follow}</b><span>关注</span></button>
+    <button onclick="toast('粉丝列表')"><b>${ME.fans}</b><span>粉丝</span></button>
+    <button onclick="openFavs('mine')"><b>${ME.favs}</b><span>收藏</span></button>
+    <button onclick="openFavs('mine')"><b>${ME.mine}</b><span>路书</span></button>`;
+  const myBooks = FAV_BOOKS.filter(b => b.mine);
+  if (favs) favs.innerHTML = myBooks.map(b => `<button class="pf-card" onclick="openFavs('mine')"><img src="${b.cover}" alt=""><span>${b.title}</span></button>`).join('');
+  if (mine) mine.innerHTML = myBooks.map(b => `<button class="pf-card" onclick="openFavs('mine')"><img src="${b.cover}" alt=""><span>${b.title}</span></button>`).join('');
+}

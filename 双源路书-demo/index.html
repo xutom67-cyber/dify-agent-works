@@ -51,12 +51,18 @@
       <div class="drawer-scrim" onclick="closeDrawer()"></div>
       <div class="drawer-panel">
         <span class="lg-refract" aria-hidden="true"></span>
-        <div class="dr-user">
+        <div class="dr-user" onclick="openProfile()" role="button" aria-label="进入用户主页">
           <div class="dr-avatar">✧</div>
           <div>
             <div class="dr-name">沈听澜</div>
             <div class="dr-sub">走遍城市的旅人</div>
           </div>
+          <span class="dr-caret">›</span>
+        </div>
+        <div class="dr-sec">路书广场</div>
+        <div class="dr-favs">
+          <button class="dr-fav-btn" onclick="openFavs('mine')">📌 我的路书</button>
+          <button class="dr-fav-btn" onclick="openFavs('all')">🌐 大家的路书</button>
         </div>
         <div class="dr-sec">当前所在</div>
         <div class="dr-loc" id="drLoc"><span class="dlc-dot"></span><span id="drLocName">上海</span></div>
@@ -282,6 +288,37 @@
         <div class="cta">
           <button class="btn" onclick="toast('数据集含高德真实抓取 · 可查证')">查看数据集 ↗</button>
         </div>
+        <div class="safe-bottom"></div>
+      </section>
+
+      <!-- 路书广场（自己的 + 大家的分享，可点赞/评论/收藏/分享） -->
+      <section class="screen s-favs" id="screen-favs">
+        <header class="s-head">
+          <button class="back" onclick="go('screen1')">‹</button>
+          <div class="step-chip" id="favsTitle">🌐 大家的路书</div>
+          <button class="hd-share" onclick="toast('已抓到最新路书')">刷新</button>
+        </header>
+        <div class="favs-tabs">
+          <button class="f-tab on" id="favtab-all" onclick="switchFavs('all')">大家的路书</button>
+          <button class="f-tab" id="favtab-mine" onclick="switchFavs('mine')">我的路书</button>
+        </div>
+        <div class="favs-list" id="favsList"></div>
+        <div class="safe-bottom"></div>
+      </section>
+
+      <!-- 用户主页 -->
+      <section class="screen s-profile" id="screen-profile">
+        <header class="s-head">
+          <button class="back" onclick="go('screen1')">‹</button>
+          <div class="step-chip">我的主页</div>
+          <button class="hd-share" onclick="toast('编辑资料')">编辑</button>
+        </header>
+        <div class="profile-hd" id="profileHd"></div>
+        <div class="profile-stats" id="profileStats"></div>
+        <div class="profile-sec">收藏的路书</div>
+        <div class="profile-grid" id="profileFavs"></div>
+        <div class="profile-sec">自己的路书</div>
+        <div class="profile-grid" id="profileMine"></div>
         <div class="safe-bottom"></div>
       </section>
 
