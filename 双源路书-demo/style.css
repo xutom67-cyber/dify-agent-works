@@ -530,12 +530,12 @@ body::before{
 .drawer-panel{
   isolation:isolate;overflow:hidden;position:relative;
   background:
-    linear-gradient(160deg, rgba(255,255,255,.82), rgba(252,250,246,.58) 55%, rgba(247,244,238,.74));
-  -webkit-backdrop-filter:blur(18px) saturate(1.4);
-  backdrop-filter:blur(18px) saturate(1.4);
-  box-shadow:10px 0 40px rgba(20,20,18,.14),
-             inset 0 0 0 .5px rgba(255,255,255,.8),
-             inset 1px 0 0 rgba(255,255,255,.95);
+    linear-gradient(165deg, rgba(255,255,255,.42), rgba(250,248,244,.26) 55%, rgba(246,243,238,.36));
+  -webkit-backdrop-filter:blur(26px) saturate(1.5);
+  backdrop-filter:blur(26px) saturate(1.5);
+  box-shadow:10px 0 40px rgba(20,20,18,.16),
+             inset 0 0 0 .5px rgba(255,255,255,.62),
+             inset 1px 0 0 rgba(255,255,255,.8);
 }
 /* 玻璃内芯：折射扭曲层 —— 让背景光透过玻璃产生弯曲/流动（液态玻璃的灵魂） */
 .drawer-panel .lg-refract{
@@ -599,12 +599,12 @@ body::before{
 .ai-sheet{
   isolation:isolate;position:relative;overflow:hidden;
   background:
-    linear-gradient(165deg, rgba(255,255,255,.84), rgba(252,250,246,.60) 45%, rgba(248,245,240,.76));
-  -webkit-backdrop-filter:blur(20px) saturate(1.4);
-  backdrop-filter:blur(20px) saturate(1.4);
-  box-shadow:0 -18px 60px rgba(20,20,18,.14),
-             inset 0 1px 0 rgba(255,255,255,.9),
-             inset 0 0 0 .5px rgba(255,255,255,.65);
+    linear-gradient(168deg, rgba(255,255,255,.46), rgba(250,248,244,.28) 45%, rgba(246,243,238,.40));
+  -webkit-backdrop-filter:blur(28px) saturate(1.5);
+  backdrop-filter:blur(28px) saturate(1.5);
+  box-shadow:0 -18px 60px rgba(20,20,18,.16),
+             inset 0 1px 0 rgba(255,255,255,.72),
+             inset 0 0 0 .5px rgba(255,255,255,.5);
 }
 /* 玻璃内芯：折射扭曲层 */
 .ai-sheet .lg-refract{
