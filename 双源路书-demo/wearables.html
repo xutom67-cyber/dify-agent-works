@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>莫友路书 · 可穿戴同步交互</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0c0d10; --bg2:#14161a; --panel:#1a1d22; --panel2:#22262c;
+  --ink:#ecedef; --ink-soft:#b8bcc2; --ink-faint:#7d828a;
+  --brand:#c03a2b; --brand-deep:#9b2e22; --brand-soft:#2a1815;
+  --accent:#6a8f5a; --accent-soft:#18231a; --warn:#e08a4a;
+  --line:#2a2e34; --line2:#33383f;
+  --serif:'Noto Serif SC',serif; --sans:'DM Sans','Noto Sans SC',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:var(--sans);color:var(--ink);background:var(--bg);
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;
+  overflow-x:hidden;letter-spacing:-.01em;
+}
+/* 顶部品牌条 */
+.hd{width:100%;padding:22px 0 8px;text-align:center;position:relative;z-index:5}
+.hd .brand{font-size:13px;letter-spacing:.22em;color:var(--ink-faint);font-weight:600}
+.hd h1{font-size:26px;font-weight:700;margin-top:6px;letter-spacing:.02em}
+.hd h1 b{color:var(--brand);font-weight:700}
+.hd .sub{font-size:12px;color:var(--ink-faint);margin-top:8px}
+/* 同步链条 */
+.sync-line{display:flex;align-items:center;gap:10px;margin:22px auto 6px;font-size:11px;color:var(--ink-faint);z-index:5}
+.sync-line .n{display:flex;align-items:center;gap:7px}
+.sync-line .n .dot{width:8px;height:8px;border-radius:50%;background:var(--brand);box-shadow:0 0 8px rgba(192,58,43,.7)}
+.sync-line .n.watch .dot{background:var(--accent);box-shadow:0 0 8px rgba(106,143,90,.7)}
+.sync-line .n.glass .dot{background:var(--warn);box-shadow:0 0 8px rgba(224,138,74,.7)}
+.sync-line .line{flex:0 0 34px;height:1px;background:var(--line2)}
+.sync-line .step-ic{opacity:.8}
+/* 主舞台 */
+.stage{display:flex;align-items:flex-start;justify-content:center;gap:46px;width:100%;max-width:1040px;padding:26px 20px 40px}
+/* ===== 手表 ===== */
+.watch-col{display:flex;flex-direction:column;align-items:center;gap:16px}
+.watch-label{font-size:11px;letter-spacing:.2em;color:var(--ink-faint);font-weight:600}
+.watch-body{
+  width:250px;height:210px;background:#0a0b0d;border-radius:44px;
+  border:6px solid #2e3339;box-shadow:0 30px 60px rgba(0,0,0,.5), inset 0 0 0 1px #1c2126;
+  position:relative;overflow:hidden;
+}
+.watch-screen{
+  position:absolute;inset:0;background:radial-gradient(circle at 50% 30%,#1c2126,#0d0f12 70%);
+  display:flex;flex-direction:column;padding:18px 16px 14px;
+}
+.watch-time{display:flex;justify-content:space-between;font-size:10.5px;color:var(--ink-faint)}
+.watch-title{font-size:16px;font-weight:700;margin-top:10px;letter-spacing:.01em}
+.watch-title .et{color:var(--accent);font-size:11px;font-weight:600;margin-left:6px}
+/* 路线折叠图 */
+.watch-route{position:relative;flex:1;margin-top:8px;background:var(--panel);border-radius:12px;border:1px solid var(--line2);overflow:hidden}
+.watch-route svg{position:absolute;inset:0;width:100%;height:100%}
+.watch-route .tr{position:absolute;left:10px;top:8px;z-index:2}
+.watch-route .tr p{font-size:12px;font-weight:700;color:var(--ink)}
+.watch-route .tr s{display:block;font-size:10px;color:var(--ink-soft)}
+.watch-route .dt{position:absolute;right:10px;top:8px;text-align:right;z-index:2}
+.watch-route .dt b{font-size:12.5px;color:var(--accent)}
+.watch-route .dt span{display:block;font-size:9.5px;color:var(--ink-faint)}
+/* 导航折叠卡（下一站） */
+.watch-next{
+  display:flex;align-items:center;gap:10px;margin-top:10px;padding:9px 10px;
+  background:linear-gradient(150deg,var(--brand),var(--brand-deep));border-radius:13px;color:#fff;
+  box-shadow:0 6px 18px rgba(192,58,43,.32);
+}
+.watch-next .ic{width:30px;height:30px;border-radius:9px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:14px}
+.watch-next .t{flex:1}
+.watch-next .t b{font-size:13px;display:block}
+.watch-next .t span{font-size:10px;opacity:.86}
+.watch-next .arr{font-size:16px;font-weight:800}
+/* 底部步数/心率 */
+.watch-foot{display:flex;justify-content:space-between;align-items:center;margin-top:auto;padding-top:8px;border-top:1px solid var(--line)}
+.watch-foot .mf{display:flex;flex-direction:column;align-items:center;gap:2px}
+.watch-foot .mf i{font-style:normal;font-size:13px;color:var(--ink);font-weight:700}
+.watch-foot .mf span{font-size:9px;color:var(--ink-faint)}
+/* 震动提醒动画 */
+.watch-pulse{width:42px;height:42px;border-radius:50%;border:2px solid var(--brand);display:flex;align-items:center;justify-content:center;font-size:17px;opacity:0;position:relative}
+@keyframes haptic{0%{opacity:0;transform:scale(.7)}20%{opacity:1;transform:scale(1.12)}40%{transform:scale(1)}55%{opacity:1}75%{opacity:.4}100%{opacity:0;transform:scale(1.1)}}
+.watch-pulse.on{animation:haptic 1.6s ease infinite}
+.watch-pulse .ring{position:absolute;inset:-2px;border-radius:50%;border:2px solid var(--brand);animation:ring 1.6s ease-out infinite}
+@keyframes ring{0%{transform:scale(.9);opacity:.8}100%{transform:scale(1.6);opacity:0}}
+/* ===== 眼镜 ===== */
+.glass-col{display:flex;flex-direction:column;align-items:center;gap:16px}
+.glass-label{font-size:11px;letter-spacing:.2em;color:var(--ink-faint);font-weight:600}
+.glass-body{
+  width:360px;background:linear-gradient(160deg,#0d0f12,#161a1e);border-radius:18px;
+  border:2px solid #2e3339;box-shadow:0 30px 60px rgba(0,0,0,.5);
+  position:relative;overflow:hidden;height:250px;
+}
+/* AR 镜片视区 */
+.glass-view{position:absolute;inset:0;overflow:hidden}
+.glass-view .sky{position:absolute;inset:0;background:linear-gradient(180deg,#1a2026 0%,#232930 40%,#1c2026 100%)}
+.glass-view .bld{position:absolute;bottom:0;left:0;right:0;height:74%;background:
+  linear-gradient(180deg,#22282e 0%,#2a3138 100%);clip-path:polygon(0 100%,0 42%,10% 46%,10% 30%,18% 26%,18% 16%,28% 20%,28% 12%,40% 16%,40% 30%,48% 28%,48% 40%,58% 46%,58% 34%,70% 28%,70% 18%,82% 22%,82% 10%,92% 14%,92% 34%,100% 40%,100% 100%);}
+.glass-view .street{position:absolute;bottom:0;left:0;right:0;height:34%;background:#191d21}
+/* 路点头向箭头 */
+.ar-row{position:absolute;left:0;right:0;top:40%;height:20px;display:flex;align-items:center;justify-content:center}
+.ar-row .ar-ic{font-size:30px;color:var(--accent);text-shadow:0 0 16px rgba(106,143,90,.8)}
+/* 地面路线折线 */
+.path3d{position:absolute;bottom:26%;left:0;right:0;height:46px}
+.path3d .ln{position:absolute;height:38px;border:3px solid var(--accent);border-top-color:transparent;border-right-color:transparent;border-radius:0 0 0 40px;transform:rotate(0deg);filter:drop-shadow(0 0 10px rgba(106,143,90,.55))}
+/* 景点浮窗 */
+.poi-card{
+  position:absolute;left:18px;top:52px;width:196px;z-index:4;
+  background:rgba(20,22,26,.72);border:1px solid rgba(255,255,255,.12);border-radius:14px;
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  box-shadow:0 10px 30px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.14);
+  padding:12px 14px;
+}
+.poi-card .tag{font-size:9.5px;letter-spacing:.14em;color:var(--brand);font-weight:700;margin-bottom:4px}
+.poi-card h3{font-size:16px;font-weight:800;color:#fff}
+.poi-card .meta{display:flex;align-items:center;gap:8px;margin-top:5px;font-size:10px;color:var(--ink-soft)}
+.poi-card .meta .star{color:var(--warn)}
+.poi-card .meta .b{color:var(--accent);font-weight:700}
+.poi-card .acts{display:flex;gap:7px;margin-top:10px}
+.poi-card .acts button{flex:1;border:0;border-radius:9px;padding:8px;font-size:11px;font-weight:600;cursor:pointer}
+.poi-card .acts .go{background:var(--brand);color:#fff}
+.poi-card .acts .info{background:rgba(255,255,255,.1);color:#fff}
+/* 眼镜浮层 HUD */
+.hud-top{position:absolute;top:12px;right:14px;display:flex;gap:8px;align-items:center;z-index:5}
+.hud-top .ch{font-size:10px;color:#fff;background:rgba(0,0,0,.4);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);padding:5px 9px;border-radius:999px;border:1px solid rgba(255,255,255,.14)}
+.hud-top .ch b{color:var(--accent)}
+/* 三方同步提示 */
+.sync-note{
+  position:absolute;bottom:12px;left:0;right:0;text-align:center;font-size:10px;color:var(--ink-faint);z-index:5;
+}
+.sync-note .syncok{display:inline-flex;align-items:center;gap:5px;color:var(--accent);font-weight:600}
+.sync-note .syncok .p{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:blink 1.4s infinite}
+@keyframes blink{50%{opacity:.3}}
+/* 底部说明 */
+.foot{width:100%;max-width:1040px;padding:6px 20px 40px;text-align:center;font-size:11px;color:var(--ink-faint);line-height:1.9}
+.foot b{color:var(--ink-soft)}
+.foot .mode{display:inline-block;margin:14px 5px 0;padding:7px 14px;border-radius:999px;background:var(--panel);border:1px solid var(--line2);font-size:11px;color:var(--ink-soft);cursor:pointer;transition:.18s}
+.foot .mode.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+@media(max-width:760px){.stage{flex-direction:column;align-items:center;gap:40px}.glass-body{width:100%;max-width:360px}}
+</style>
+</head>
+<body>
+<div class="hd">
+  <div class="brand">莫友路书 · WEARABLE</div>
+  <h1>可穿戴 <b>同步交互</b></h1>
+  <div class="sub">手机小莫规划 → 手表导航折叠 → 眼镜 AR 投射，一路同步</div>
+</div>
+
+<div class="sync-line">
+  <div class="n phone"><span class="dot"></span>手机 · 小莫</div>
+  <span class="line"></span>
+  <div class="n watch"><span class="dot"></span>手表 · 导航</div>
+  <span class="line"></span>
+  <div class="n glass"><span class="dot"></span>眼镜 · AR 街景</div>
+</div>
+
+<div class="stage">
+  <!-- 手表 -->
+  <div class="watch-col">
+    <div class="watch-label">WATCH · 导航折叠</div>
+    <div class="watch-body">
+      <div class="watch-screen">
+        <div class="watch-time"><span>12:28</span><span>⌁ 已同步</span></div>
+        <div class="watch-title">去武康大楼 <span class="et">ETA 12:35</span></div>
+        <div class="watch-route">
+          <div class="tr"><p>武康大楼 · 下一站</p><s>慢走 6 分钟 · 400m</s></div>
+          <div class="dt"><b>12:35</b><span>到达</span></div>
+          <svg viewBox="0 0 200 120" preserveAspectRatio="none">
+            <path d="M14 108 Q70 110 96 70 T170 34" fill="none" stroke="#3a3f46" stroke-width="3" stroke-dasharray="5 5"/>
+            <path d="M14 108 Q70 110 96 70 T170 34" fill="none" stroke="#6a8f5a" stroke-width="3.4" stroke-linecap="round"/>
+            <circle cx="14" cy="108" r="4" fill="#c03a2b"/>
+            <circle cx="170" cy="34" r="5" fill="#6a8f5a"/>
+          </svg>
+        </div>
+        <div class="watch-next">
+          <div class="ic">↱</div>
+          <div class="t"><b>前方 130m 右转</b><span>进入武康路</span></div>
+          <div class="arr">130m</div>
+        </div>
+        <div class="watch-foot">
+          <div class="mf"><i>8.4k</i><span>步</span></div>
+          <div class="watch-pulse" id="watchPulse"><span>⌁</span><span class="ring"></span></div>
+          <div class="mf"><i>78</i><span>bpm</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 眼镜 -->
+  <div class="glass-col">
+    <div class="glass-label">GLASS · AR 街景</div>
+    <div class="glass-body">
+      <div class="glass-view">
+        <div class="sky"></div>
+        <div class="bld"></div>
+        <div class="street"></div>
+        <div class="ar-row"><span class="ar-ic">➜</span></div>
+        <div class="path3d"><div class="ln" style="left:52%;bottom:0;width:32%"></div></div>
+      </div>
+      <div class="poi-card">
+        <div class="tag">名胜 · Ⅲ 类保护建筑</div>
+        <h3>武康大楼</h3>
+        <div class="meta"><span class="star">★ 4.9</span><span class="b">136m 步行中</span></div>
+        <div class="acts"><button class="go">到此一游 ↗</button><button class="info">简介</button></div>
+      </div>
+      <div class="hud-top"><span class="ch">AR 导航 <b>开</b></span><span class="ch">⌁ 链接稳定</span></div>
+      <div class="sync-note"><span class="syncok"><span class="p"></span>已与手表同步</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="foot">
+  <b>三方同步逻辑：</b>手机「小莫」确认路线后，自动下发到手表做导航折叠（下一站/距离/到达时间，转弯前震动提醒），同时推送到眼镜以 AR 箭头投射到真实路面，浮现前方景点信息卡。手表震动与眼镜浮窗<b>同帧联动</b>，无需低头看手机。
+  <br>
+  点击切换交互相位：
+  <span class="mode on" data-mode="approach">接近 · 震动+浮窗</span>
+  <span class="mode" data-mode="arrive">抵达 · 相机拍档</span>
+  <span class="mode" data-mode="walking">慢走中 · 导航折叠</span>
+</div>
+
+<script>
+// 交互相位切换：同步更新手表震动 + 眼镜浮窗 + 路线进度
+const pulse = document.getElementById('watchPulse');
+const modes = document.querySelectorAll('.mode');
+const poiTitle = document.querySelector('.poi-card h3');
+const poiTag = document.querySelector('.poi-card .tag');
+const watchNext = document.querySelector('.watch-next .t');
+const watchDist = document.querySelector('.watch-next .arr');
+const routePath = document.querySelector('.watch-route svg path:not([stroke-dasharray])');
+const arIcon = document.querySelector('.ar-ic');
+
+const PHASES = {
+  approach: {
+    title:'武康大楼', tag:'名胜 · Ⅲ 类保护建筑',
+    next:'前方 130m 右转 · 进入武康路', dist:'130m',
+    ar:'➜', pulse:'on'
+  },
+  arrive: {
+    title:'武康大楼', tag:'已抵达 · 需抬头拍张照',
+    next:'到达 · 建议驻足拍摄', dist:'到此',
+    ar:'📷', pulse:''
+  },
+  walking: {
+    title:'武康大楼', tag:'行经 · 距终点 780m',
+    next:'沿淮海中路直行', dist:'46m',
+    ar:'⤴', pulse:''
+  }
+};
+
+modes.forEach(m=>{
+  m.addEventListener('click',()=>{
+    modes.forEach(x=>x.classList.remove('on'));
+    m.classList.add('on');
+    const p = PHASES[m.dataset.mode];
+    poiTitle.textContent = p.title;
+    poiTag.textContent = p.tag;
+    watchNext.querySelector('b').textContent = p.next;
+    watchDist.textContent = p.dist;
+    arIcon.textContent = p.ar;
+    pulse.classList.toggle('on', p.pulse==='on');
+  });
+});
+</script>
+</body>
+</html>
