@@ -1450,11 +1450,11 @@ function buildFavs() {
     const liked = favLikeState[b.id] ?? b.liked;
     const likes = (favLikeState[b.id] ? b.like + 1 : b.like);
     return `
-    <article class="fav-card">
-      <div class="fc-hd">
+    <article class="fav-card" onclick="openBook('${b.id}')">
+      <div class="fc-hd" onclick="event.stopPropagation()">
         <div class="ava" style="background:hsl(${(b.user.charCodeAt(0)*37)%360},44%,62%)">${b.ava}</div>
         <div class="fc-user"><div class="nm">${b.user}</div><div class="tm">${b.when} · ${b.city}</div></div>
-        <button class="follow" onclick="favFollow(this)">＋关注</button>
+        <button class="follow" onclick="event.stopPropagation();favFollow(this)">＋关注</button>
       </div>
       <div class="fc-cover"><img src="${b.cover}" alt="${b.title}"><div class="fc-title"><b>${b.title}</b>${b.city}</div></div>
       <div class="fc-desc">${b.desc}</div>
@@ -1466,12 +1466,13 @@ function buildFavs() {
         <div class="fm"><span>行走步数</span><em>${b.steps}</em></div>
         <div class="fm"><span>消费金额</span><em>${b.cost}</em></div>
       </div>
-      <div class="fc-acts">
+      <div class="fc-acts" onclick="event.stopPropagation()">
         <button class="act ${liked?'like on':''}" onclick="favLike('${b.id}',this)"><span class="a-ic">${liked?'♥':'♡'}</span><em>${likes}</em></button>
         <button class="act cmt" onclick="toast('评论功能演示')"><span class="a-ic">✎</span><em>${b.cmt}</em></button>
         <button class="act" onclick="favCollect(this)"><span class="a-ic">🔖</span><em>收藏</em></button>
         <button class="act share" onclick="favShare('${b.title}')"><span class="a-ic">↗</span><em>分享</em></button>
       </div>
+      <div class="fc-enter">查看完整路书 ↗</div>
     </article>`;
   }).join('');
 }
@@ -1511,4 +1512,87 @@ function buildProfile() {
   const myBooks = FAV_BOOKS.filter(b => b.mine);
   if (favs) favs.innerHTML = myBooks.map(b => `<button class="pf-card" onclick="openFavs('mine')"><img src="${b.cover}" alt=""><span>${b.title}</span></button>`).join('');
   if (mine) mine.innerHTML = myBooks.map(b => `<button class="pf-card" onclick="openFavs('mine')"><img src="${b.cover}" alt=""><span>${b.title}</span></button>`).join('');
+}
+
+/* ============================================================
+   路书详情（点击卡片进入，展示完整路线/时间线/打卡/数据）
+   ============================================================ */
+const BOOK_DETAIL = {
+  sh1: [
+    { t:'09:30', name:'白日清澄（愚园路店）', type:'咖啡 · 静安区', img:'images/bauricheng.jpg', cost:'¥78', note:'清澄手冲配薄Brunch' },
+    { t:'11:30', name:'Square In House（愚园路店）', type:'设计集合 · 静安', img:'', cost:'¥—', note:'静安设集中心，设计爱好者能逛很久' },
+    { t:'15:00', name:'百乐门', type:'历史建筑 · 舞厅', img:'images/baimen.jpg', cost:'¥292', note:'海派爵士氛围，老建筑很有味道' },
+    { t:'19:30', name:'GRAIN Whisky & Cocktail Bar', type:'酒吧 · 静安寺旁', img:'images/grain.jpg', cost:'¥123', note:'威士忌+鸡尾酒，收尾刚刚好' },
+  ],
+  sh2: [
+    { t:'10:00', name:'PLUSONE COFFEE（武康路店）', type:'咖啡 · 徐汇区', img:'images/plusone.jpg', cost:'¥49', note:'武康路口碑咖啡，街角一坐半天' },
+    { t:'11:30', name:'武康大楼', type:'历史建筑 · 地标', img:'images/wukang.jpg', cost:'¥0', note:'船型大楼拍照绝了，转角机位' },
+    { t:'13:30', name:'老麦咖啡馆', type:'咖啡 · 历史街区', img:'images/laomai.jpg', cost:'¥63', note:'院落感很强，适合歇脚拍照' },
+  ],
+  bj1: [
+    { t:'09:30', name:'南锣鼓巷', type:'胡同街区 · 东城', img:'images/bj_nanluoguxiang.jpg', cost:'¥—', note:'老北京的胡同肌理，喧闹里有烟火' },
+    { t:'11:30', name:'孔庙和国子监博物馆', type:'皇家建筑 · 东城', img:'images/bj_guozijian.jpg', cost:'¥—', note:'元明清三代最高学府，琉璃瓦映古柏' },
+    { t:'15:00', name:'五道营胡同', type:'文艺胡同 · 东城', img:'images/bj_wudaoying.jpg', cost:'¥—', note:'咖啡馆、杂货铺，比南锣安静不少' },
+    { t:'17:30', name:'景山公园', type:'皇家园林', img:'images/bj_jingshan.jpg', cost:'¥—', note:'万春亭俯瞰紫禁城，中轴线一眼望尽' },
+  ],
+  cd1: [
+    { t:'09:00', name:'宽窄巷子', type:'老城街区 · 青羊', img:'images/cd_kuanzhai.jpg', cost:'¥—', note:'青砖黛瓦，成都慢生活的门面' },
+    { t:'10:30', name:'人民公园', type:'市民公园 · 青羊', img:'images/cd_renmingongyuan.jpg', cost:'¥—', note:'喝茶掏耳朵，成都人把生活过成日子' },
+    { t:'11:30', name:'鹤鸣茶社', type:'百年茶馆 · 青羊', img:'images/cd_heming.jpg', cost:'¥39', note:'盖碗茶配竹椅，安逸得很' },
+  ],
+};
+let currentBook = null;
+function openBook(id) {
+  const b = FAV_BOOKS.find(x => x.id === id);
+  if (!b) return;
+  currentBook = id;
+  buildBook(b);
+  go('screen-book');
+}
+function buildBook(b) {
+  const body = document.getElementById('bookBody');
+  const acts = document.getElementById('bookActs');
+  const stops = BOOK_DETAIL[b.id] || [];
+  const liked = favLikeState[b.id] ?? b.liked;
+  const likes = (favLikeState[b.id] ? b.like + 1 : b.like);
+  if (body) body.innerHTML = `
+    <div class="bk-cover"><img src="${b.cover}" alt=""><div class="bk-cover-t"><span>${b.city}</span><h2>${b.title}</h2></div></div>
+    <div class="bk-user">
+      <div class="ava" style="background:hsl(${(b.user.charCodeAt(0)*37)%360},44%,62%)">${b.ava}</div>
+      <div><div class="nm">${b.user}</div><div class="tm">${b.when} · ${b.city} · 分享</div></div>
+      <button class="follow" onclick="favFollow(this)">＋关注</button>
+    </div>
+    <p class="bk-desc">${b.desc}</p>
+    <div class="bk-stats">
+      <div><b>${b.steps}</b><span>行走步数</span></div>
+      <div><b>${b.cost}</b><span>消费金额</span></div>
+      <div><b>${b.photos.length}</b><span>打卡照片</span></div>
+    </div>
+    <div class="bk-photos">${b.photos.map(p=>`<img src="${p}" alt="">`).join('')}</div>
+    <div class="bk-route-h">◫ 游览路线</div>
+    <div class="bk-route">${b.route.map((r,i)=>`<div class="br-stop"><i>${i+1}</i><span>${r}</span></div>`).join('')}</div>
+    <div class="bk-route-h">🍽 吃喝玩乐</div>
+    <div class="bk-eat">${b.eat.replace('❤ ','')}</div>
+    <div class="bk-route-h">🕘 时间线</div>
+    <div class="bk-timeline">
+      ${stops.map(s=>`<div class="bk-spot">
+        <div class="bk-time">${s.t}</div>
+        <div class="bk-dot"></div>
+        <div class="bk-spot-card">
+          ${s.img?`<img src="${s.img}" alt="">`:''}
+          <div><b>${s.name}</b><span>${s.type}</span></div>
+          <em>${s.cost}</em>
+          <p>${s.note}</p>
+        </div>
+      </div>`).join('')}
+    </div>`;
+  if (acts) acts.innerHTML = `
+    <button class="bk-act ${liked?'on':''}" onclick="favLike('${b.id}',this)"><span class="a-ic">${liked?'♥':'♡'}</span>${likes}</button>
+    <button class="bk-act" onclick="toast('评论功能演示')"><span class="a-ic">✎</span>${b.cmt}</button>
+    <button class="bk-act" onclick="favCollect(this)"><span class="a-ic">🔖</span>收藏</button>
+    <button class="bk-act share" onclick="bookShare()"><span class="a-ic">↗</span>分享</button>`;
+}
+function bookShare() {
+  const b = FAV_BOOKS.find(x => x.id === currentBook);
+  toast('已分享到社交媒体：' + (b ? b.title : '路书'));
 }
