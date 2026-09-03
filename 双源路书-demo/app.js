@@ -1083,43 +1083,100 @@ function renderPetSvg() {
   const svg = document.getElementById('petSvg');
   if (!svg) return;
   const col = petHex();
+  const dk = '#2a2624';
   const accent = M.pet.accents.find(a => a.id === petState.accent);
+  const pink = '#f4b8b0';      // 腮红 / 耳内衬
+  const light = shade(col, .16); // 肚皮浅色
   let body = '';
-  const dk = '#1a1a1a';
-  if (petState.type === 'fox') { // 坐姿猫（默认）
-    body = `<path d="M42 48 L50 28 L56 44 Z" fill="${col}"/><path d="M78 48 L70 28 L64 44 Z" fill="${col}"/>
-      <ellipse cx="60" cy="42" rx="16" ry="14" fill="${col}"/>
-      <path d="M60 28 L66 40 L54 40 Z" fill="rgba(0,0,0,.08)"/>
-      <circle cx="54" cy="42" r="2.8" fill="${dk}"/><circle cx="66" cy="42" r="2.8" fill="${dk}"/>
-      <path d="M50 74 L46 82 L54 79 Z" fill="${col}"/><ellipse cx="52" cy="80" rx="2.6" ry="3" fill="${dk}"/>
-      <path d="M70 74 L74 82 L66 79 Z" fill="${col}"/><ellipse cx="68" cy="80" rx="2.6" ry="3" fill="${dk}"/>
-      <path d="M60 46 q3 4 0 7" stroke="${dk}" stroke-width="2" fill="none" stroke-linecap="round"/>
-      <path d="M43 55 Q60 70 77 55" stroke="${col}" stroke-width="3.2" fill="none" stroke-linecap="round"/>`;
+  if (petState.type === 'fox') { // 坐姿猫
+    body = `
+      <ellipse cx="60" cy="108" rx="26" ry="6" fill="rgba(0,0,0,.06)"/>
+      <ellipse cx="60" cy="86" rx="30" ry="26" fill="${col}"/>
+      <ellipse cx="60" cy="96" rx="20" ry="17" fill="${light}"/>
+      <path d="M38 50 L44 24 L56 46 Z" fill="${col}"/>
+      <path d="M44 27 L50 42 L42 44 Z" fill="${pink}" opacity=".7"/>
+      <path d="M82 50 L76 24 L64 46 Z" fill="${col}"/>
+      <path d="M76 27 L70 42 L78 44 Z" fill="${pink}" opacity=".7"/>
+      <path d="M60 24 L66 38 L54 38 Z" fill="${dk}" opacity=".10"/>
+      <ellipse cx="60" cy="76" rx="24" ry="22" fill="${col}"/>
+      <ellipse cx="60" cy="84" rx="17" ry="15" fill="${light}"/>
+      <g class="pet-eyes">
+        <ellipse cx="50" cy="74" rx="4.6" ry="5.4" fill="${dk}"/>
+        <ellipse cx="70" cy="74" rx="4.6" ry="5.4" fill="${dk}"/>
+        <circle cx="51.6" cy="71.8" r="1.8" fill="#fff"/>
+        <circle cx="71.6" cy="71.8" r="1.8" fill="#fff"/>
+      </g>
+      <g class="pet-blush">
+        <ellipse cx="42" cy="80" rx="5" ry="3.2" fill="${pink}" opacity=".7"/>
+        <ellipse cx="78" cy="80" rx="5" ry="3.2" fill="${pink}" opacity=".7"/>
+      </g>
+      <path d="M57 84 q3 3 6 0" stroke="${dk}" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      <path d="M36 88 q-2 10 8 12" stroke="${col}" stroke-width="3.6" fill="none" stroke-linecap="round"/>
+      <ellipse cx="45" cy="104" rx="6" ry="4.6" fill="${col}"/>
+      <ellipse cx="75" cy="104" rx="6" ry="4.6" fill="${col}"/>
+      <path d="M43 104 l1.6 2.6 l1.6 -2.6 M73 104 l1.6 2.6 l1.6 -2.6" stroke="${dk}" stroke-width="1.2" fill="none" stroke-linecap="round"/>`;
   } else if (petState.type === 'star') { // 立姿猫
-    body = `<ellipse cx="60" cy="50" rx="19" ry="17" fill="${col}"/>
-      <path d="M44 38 L40 22 L50 32 Z" fill="${col}"/><path d="M76 38 L80 22 L70 32 Z" fill="${col}"/>
-      <circle cx="53" cy="49" r="3" fill="${dk}"/><circle cx="67" cy="49" r="3" fill="${dk}"/>
-      <path d="M59 54 q1 3 2 0" stroke="${dk}" stroke-width="1.8" fill="none"/>
-      <path d="M47 62 L45 58 M73 62 L75 58" stroke="${dk}" stroke-width="1.4" stroke-linecap="round"/>
-      <ellipse cx="60" cy="82" rx="18" ry="13" fill="${col}"/>
-      <ellipse cx="60" cy="90" rx="10" ry="4" fill="rgba(0,0,0,.06)"/>`;
+    body = `
+      <ellipse cx="60" cy="104" rx="24" ry="6" fill="rgba(0,0,0,.06)"/>
+      <ellipse cx="60" cy="56" rx="23" ry="21" fill="${col}"/>
+      <ellipse cx="60" cy="63" rx="16" ry="14" fill="${light}"/>
+      <path d="M42 42 L36 16 L50 36 Z" fill="${col}"/>
+      <path d="M39 20 L46 34 L38 36 Z" fill="${pink}" opacity=".7"/>
+      <path d="M78 42 L84 16 L70 36 Z" fill="${col}"/>
+      <path d="M81 20 L74 34 L82 36 Z" fill="${pink}" opacity=".7"/>
+      <g class="pet-eyes">
+        <ellipse cx="51" cy="56" rx="4.4" ry="5.2" fill="${dk}"/>
+        <ellipse cx="69" cy="56" rx="4.4" ry="5.2" fill="${dk}"/>
+        <circle cx="52.5" cy="54" r="1.7" fill="#fff"/>
+        <circle cx="70.5" cy="54" r="1.7" fill="#fff"/>
+      </g>
+      <g class="pet-blush">
+        <ellipse cx="42" cy="62" rx="4.8" ry="3" fill="${pink}" opacity=".7"/>
+        <ellipse cx="78" cy="62" rx="4.8" ry="3" fill="${pink}" opacity=".7"/>
+      </g>
+      <path d="M58 65 q2 3 4 0" stroke="${dk}" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <ellipse cx="60" cy="90" rx="20" ry="15" fill="${col}"/>
+      <ellipse cx="60" cy="96" rx="12" ry="9" fill="${light}"/>
+      <path d="M50 104 q-2 8 -6 10" stroke="${col}" stroke-width="3.6" fill="none" stroke-linecap="round"/>
+      <ellipse cx="47" cy="58" rx="6" ry="4.4" fill="${col}"/>
+      <ellipse cx="73" cy="58" rx="6" ry="4.4" fill="${col}"/>`;
   } else { // 团子猫（蜷缩）
-    body = `<ellipse cx="60" cy="64" rx="28" ry="24" fill="${col}"/>
-      <ellipse cx="60" cy="80" rx="20" ry="9" fill="rgba(0,0,0,.07)"/>
-      <circle cx="44" cy="58" r="3" fill="${dk}"/><circle cx="62" cy="56" r="3" fill="${dk}"/>
-      <path d="M49 63 q4 3 8 0" stroke="${dk}" stroke-width="2" fill="none" stroke-linecap="round"/>
-      <path d="M46 42 L42 30 L52 40 Z" fill="${col}"/><path d="M68 42 L72 30 L62 40 Z" fill="${col}"/>
-      <path d="M44 71 q8 6 18 4" stroke="${col}" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".6"/>
-      <ellipse cx="40" cy="66" rx="4" ry="2.6" fill="#e8b8b0" opacity=".55"/><ellipse cx="78" cy="62" rx="4" ry="2.6" fill="#e8b8b0" opacity=".55"/>`;
+    body = `
+      <ellipse cx="60" cy="86" rx="30" ry="20" fill="rgba(0,0,0,.05)"/>
+      <ellipse cx="60" cy="62" rx="34" ry="30" fill="${col}"/>
+      <ellipse cx="60" cy="72" rx="24" ry="20" fill="${light}"/>
+      <path d="M38 42 Q36 16 52 36 Z" fill="${col}"/>
+      <path d="M82 42 Q84 16 68 36 Z" fill="${col}"/>
+      <path d="M41 25 L47 36 L40 38 Z" fill="${pink}" opacity=".7"/>
+      <path d="M79 25 L73 36 L80 38 Z" fill="${pink}" opacity=".7"/>
+      <g class="pet-eyes">
+        <ellipse cx="49" cy="60" rx="4.8" ry="5.6" fill="${dk}"/>
+        <ellipse cx="71" cy="60" rx="4.8" ry="5.6" fill="${dk}"/>
+        <circle cx="50.8" cy="57.6" r="1.9" fill="#fff"/>
+        <circle cx="72.8" cy="57.6" r="1.9" fill="#fff"/>
+      </g>
+      <g class="pet-blush">
+        <ellipse cx="41" cy="66" rx="5.2" ry="3.4" fill="${pink}" opacity=".7"/>
+        <ellipse cx="79" cy="66" rx="5.2" ry="3.4" fill="${pink}" opacity=".7"/>
+      </g>
+      <path d="M57 70 q3 3 6 0" stroke="${dk}" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      <path d="M44 78 q-10 8 -4 -6" stroke="${col}" stroke-width="3.8" fill="none" stroke-linecap="round"/>`;
   }
   let accentSvg = '';
-  if (accent && accent.id === 'scarf') accentSvg = `<path d="M42 74 q18 10 36 0 l-3 8 q-15 8 -30 0 Z" fill="${accent.hex || '#e08a6d'}"/>`;
-  else if (accent && accent.id === 'cap') accentSvg = `<path d="M38 52 a22 16 0 0 1 44 0 Z" fill="${accent.hex || '#e08a6d'}"/><circle cx="60" cy="48" r="3" fill="${accent.hex || '#e08a6d'}"/>`;
-  else if (accent && accent.id === 'dot') accentSvg = `<ellipse cx="40" cy="70" rx="5" ry="3.2" fill="#ff9d8a" opacity=".75"/><ellipse cx="80" cy="70" rx="5" ry="3.2" fill="#ff9d8a" opacity=".75"/>`;
+  if (accent && accent.id === 'scarf') accentSvg = `<path d="M46 82 q14 8 28 0 l-3.5 9 q-11 6 -21 0 Z" fill="${accent.hex || '#e08a6d'}"/><path d="M56 90 q-1 6 3 8" stroke="${accent.hex || '#e08a6d'}" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  else if (accent && accent.id === 'cap') accentSvg = `<path d="M40 54 a20 15 0 0 1 40 0 Z" fill="${accent.hex || '#e08a6d'}"/><ellipse cx="60" cy="38" rx="3.4" ry="3" fill="${accent.hex || '#e08a6d'}"/>`;
+  else if (accent && accent.id === 'dot') accentSvg = `<ellipse cx="38" cy="78" rx="5.5" ry="3.6" fill="#ff9d8a" opacity=".8"/><ellipse cx="82" cy="78" rx="5.5" ry="3.6" fill="#ff9d8a" opacity=".8"/>`;
   svg.innerHTML = `<g>${body}${accentSvg}</g>`;
   // 同步到大主页宠物
   const big = document.getElementById('petSvgBig');
   if (big) big.innerHTML = `<g>${body}${accentSvg}</g>`;
+}
+/* 颜色提亮/加深（生成肚皮浅色等） */
+function shade(hex, amt) {
+  const n = parseInt(hex.slice(1), 16);
+  let r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  r = Math.round(r + (255 - r) * amt); g = Math.round(g + (255 - g) * amt); b = Math.round(b + (255 - b) * amt);
+  return `rgb(${r},${g},${b})`;
 }
 function syncPetFab() {
   const svg = document.getElementById('petSvg');
