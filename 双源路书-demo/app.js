@@ -111,7 +111,7 @@ function renderCityHero() {
   holder.style.backgroundImage = `url("${c.heroImg}")`;
   holder.style.setProperty('--city', c.color);
   const cap = document.getElementById('cityHeroCap');
-  if (cap) cap.textContent = `${c.name} · ${c.colorName}`;
+  if (cap) cap.textContent = `${c.name}`;
 }
 
 /* 按实时定位自动定城市（演示：读取真实高德坐标；getUserMedia 定位实际由原生负责，
