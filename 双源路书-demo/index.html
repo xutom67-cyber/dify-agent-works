@@ -75,34 +75,53 @@
 
     <div class="screens" id="screens">
 
-      <!-- 屏1 开场（城市摄影 + 宠物猫 + 诗句 + 输入/唤醒） -->
+      <!-- 屏1 开场（3D 立方体轮换 + 液态粒子 + 宠物猫 + 圆形输入） -->
       <section class="screen s1 active" id="screen1">
-        <div class="city-hero" id="cityHero">
-          <div class="city-hero-scrim"></div>
-          <div class="city-hero-top">
-            <div class="city-hero-cap" id="cityHeroCap">上海 · 焦糖</div>
+        <!-- 3D 空间立方体背景：轮换城市风景/插画 -->
+        <div class="cube-scene" id="cubeScene" aria-hidden="true">
+          <div class="cube" id="cube">
+            <div class="cube-face front"><span class="cf-tag">上海 · 梧桐区</span><img src="images/pudao.jpg" alt=""></div>
+            <div class="cube-face back"><span class="cf-tag">北京 · 老城</span><img src="images/bj_jingshan.jpg" alt=""></div>
+            <div class="cube-face right"><span class="cf-tag">成都 · 慢生活</span><img src="images/cd_renmingongyuan.jpg" alt=""></div>
+            <div class="cube-face left"><span class="cf-tag">上海 · 武康路</span><img src="images/wukang.jpg" alt=""></div>
+            <div class="cube-face top"><span class="cf-tag">上海 · 转角</span><img src="images/bauricheng.jpg" alt=""></div>
+            <div class="cube-face bottom"><span class="cf-tag">成都 · 盖碗茶</span><img src="images/cd_heming.jpg" alt=""></div>
           </div>
+          <canvas class="cube-particles" id="cubeParticles" aria-hidden="true"></canvas>
+          <div class="cube-fade"></div>
+        </div>
+
+        <!-- 城市名片（右上，跟踪立方体当前面） -->
+        <div class="city-hero-top">
+          <div class="city-hero-cap" id="cityHeroCap">上海</div>
         </div>
         <button class="menu-btn" onclick="openDrawer()" aria-label="菜单">☰</button>
-        <div class="s1-inner">
-          <div class="pet-hero" id="petHero" onclick="openPet()">
-            <div class="pet-stage-big">
-              <svg viewBox="0 0 120 120" id="petSvgBig" width="150" height="150"></svg>
-            </div>
-            <div class="pet-caption">小莫 <span class="pet-line" id="petLine">下一站，你说了算</span></div>
-          </div>
 
-          <p class="poem-line" id="poemLine">梧桐叶落，才算见过上海的秋。</p>
-
-          <div class="s1-input">
-            <div class="s1-box" id="homeInput" contenteditable="true" data-ph="告诉我，你想去哪儿走走…"></div>
-            <div class="s1-actions">
-              <button class="s1-btn voice" onclick="wakeAI()"><span class="ic">🎤</span> 唤起小莫</button>
-              <button class="s1-btn send" onclick="homeSend()">↵</button>
-            </div>
-          </div>
-          <div class="s1-hint">也可以长按右侧电源键唤醒</div>
+        <!-- 中间交互提示 -->
+        <div class="s1-prompt">
+          <span class="prompt-mic">🎤</span>
+          <span class="prompt-txt">通过「嘿，小莫」<b>语音唤醒</b> · 或按住下方按钮唤醒小莫</span>
         </div>
+
+        <!-- 圆形输入按钮 -->
+        <div class="s1-input" id="s1Input">
+          <button class="holy-voice" id="holyVoice" onclick="wakeAI()" aria-label="唤醒小莫">
+            <svg viewBox="0 0 120 120" id="petSvgBtn" width="54" height="54"></svg>
+          </button>
+          <div class="s1-box" id="homeInput" contenteditable="true" data-ph="告诉我，你想去哪儿走走…"></div>
+          <div class="s1-actions">
+            <button class="s1-btn send" onclick="homeSend()">↵</button>
+          </div>
+          <div class="s1-hint">长按右侧电源键也能唤醒</div>
+        </div>
+
+        <div class="pet-hero" id="petHero" onclick="openPet()" style="display:none">
+          <div class="pet-stage-big">
+            <svg viewBox="0 0 120 120" id="petSvgBig" width="150" height="150"></svg>
+          </div>
+          <div class="pet-caption">小莫 <span class="pet-line" id="petLine">下一站，你说了算</span></div>
+        </div>
+        <p class="poem-line" id="poemLine" style="display:none">梧桐叶落，才算见过上海的秋。</p>
       </section>
 
       <!-- 屏2 确认需求 -->

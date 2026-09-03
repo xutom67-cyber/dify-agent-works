@@ -767,3 +767,93 @@ body::before{
   animation:lgTagSheen 6.5s cubic-bezier(.45,.05,.25,1) infinite;
 }
 .dr-data>*{position:relative;z-index:1}
+
+/* ============================================================
+   屏1 开场：3D 空间立方体轮换 + 液态粒子 + 圆形输入按钮
+   （立方体载入城市风景/插画，缓慢旋转轮换；canvas 液态粒子覆盖）
+   ============================================================ */
+.s1{background:#0e0f12;overflow:hidden}
+/* 立方体场景 */
+.cube-scene{position:absolute;inset:0;z-index:1;display:flex;align-items:center;justify-content:center;perspective:900px;overflow:hidden}
+.cube{width:250px;height:250px;transform-style:preserve-3d;animation:cubeSpin 26s ease-in-out infinite}
+.cube-face{
+  position:absolute;width:250px;height:250px;
+  overflow:hidden;background:#14161a;
+  box-shadow:inset 0 0 60px rgba(0,0,0,.6), 0 0 32px rgba(0,0,0,.4);
+  border:1px solid rgba(255,255,255,.08);
+}
+.cube-face img{width:100%;height:100%;object-fit:cover;opacity:.82;filter:saturate(.9) brightness(.72)}
+.cube-face::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(14,15,18,0) 30%,rgba(14,15,18,.72) 100%)}
+.cube-face .cf-tag{
+  position:absolute;left:0;right:0;bottom:0;z-index:2;padding:10px 12px;
+  font-family:var(--serif);font-size:12px;font-weight:600;letter-spacing:.08em;color:#fff;
+}
+.cube-face .cf-tag::before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--brand);margin-right:7px;vertical-align:2px;box-shadow:0 0 8px rgba(192,58,43,.8)}
+.cube-face.front{transform:translateZ(125px)}
+.cube-face.back{transform:rotateY(180deg) translateZ(125px)}
+.cube-face.right{transform:rotateY(90deg) translateZ(125px)}
+.cube-face.left{transform:rotateY(-90deg) translateZ(125px)}
+.cube-face.top{transform:rotateX(90deg) translateZ(125px)}
+.cube-face.bottom{transform:rotateX(-90deg) translateZ(125px)}
+@keyframes cubeSpin{
+  0%{transform:rotateX(-12deg) rotateY(0deg)}
+  25%{transform:rotateX(-8deg) rotateY(90deg)}
+  50%{transform:rotateX(8deg) rotateY(180deg)}
+  75%{transform:rotateX(-8deg) rotateY(270deg)}
+  100%{transform:rotateX(-12deg) rotateY(360deg)}
+}
+/* 液态粒子层 */
+.cube-particles{position:absolute;inset:0;z-index:2;pointer-events:none}
+/* 立方体上方柔和渐隐（让前景文字/按钮可读） */
+.cube-fade{position:absolute;inset:0;z-index:3;pointer-events:none;
+  background:radial-gradient(90% 70% at 50% 42%, rgba(14,15,18,.05) 30%, rgba(14,15,18,.78) 100%)}
+/* 顶部菜单/城市标签 */
+.s1 .city-hero-top{position:absolute;top:58px;left:18px;right:18px;z-index:12;display:flex;align-items:center;justify-content:space-between;pointer-events:none}
+.s1 .city-hero-cap{font-family:var(--serif);font-size:12px;font-weight:600;letter-spacing:.08em;color:#fff;background:rgba(15,15,15,.4);backdrop-filter:blur(10px);padding:7px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.18)}
+.s1 .menu-btn{position:absolute;top:58px;left:18px;z-index:14;width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,255,255,.3);background:rgba(15,15,15,.4);backdrop-filter:blur(8px);box-shadow:0 4px 14px rgba(0,0,0,.3);font-size:16px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;pointer-events:auto}
+.s1 .city-hero-top .city-hero-cap{margin-left:auto}
+
+/* 中间交互提示 */
+.s1-prompt{
+  position:absolute;top:52%;left:0;right:0;z-index:6;text-align:center;
+  transform:translateY(-50%);pointer-events:none;padding:0 30px;
+}
+.s1-prompt .prompt-mic{display:block;font-size:26px;margin:0 auto 12px;filter:drop-shadow(0 0 12px rgba(192,58,43,.6));animation:micFloat 3.6s ease-in-out infinite}
+@keyframes micFloat{0%,100%{transform:translateY(0);opacity:.9}50%{transform:translateY(-6px);opacity:1}}
+.s1-prompt .prompt-txt{
+  display:inline-block;font-size:12.5px;color:#d7d9dd;letter-spacing:.06em;
+  background:rgba(14,15,18,.5);border:1px solid rgba(255,255,255,.12);border-radius:999px;
+  padding:9px 18px;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);line-height:1.6;
+  box-shadow:0 4px 18px rgba(0,0,0,.3);
+}
+.s1-prompt .prompt-txt b{color:var(--brand);font-weight:700}
+
+/* 圆形输入按钮 + 输入区（偏下） */
+.s1 .s1-input{position:absolute;left:0;right:0;bottom:0;z-index:8;padding:0 24px 34px;display:flex;flex-direction:column;align-items:center;gap:13px}
+.holy-voice{
+  width:84px;height:84px;border-radius:50%;border:0;cursor:pointer;
+  background:radial-gradient(circle at 35% 30%, #3a3b40, #1c1e23 70%);
+  box-shadow:0 12px 34px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.16), inset 0 0 0 1px rgba(255,255,255,.08);
+  display:flex;align-items:center;justify-content:center;position:relative;
+  transition:.18s;color:#fff;
+}
+.holy-voice:hover{box-shadow:0 16px 40px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.2), inset 0 0 0 1px rgba(255,255,255,.12)}
+.holy-voice:active{transform:scale(.93)}
+.holy-voice::before{content:'';position:absolute;inset:-10px;border-radius:50%;border:1.5px solid rgba(192,58,43,.35);animation:voiceRing 3s ease-out infinite}
+@keyframes voiceRing{0%{transform:scale(.9);opacity:.7}70%{transform:scale(1.5);opacity:0}100%{opacity:0}}
+.holy-voice svg{pointer-events:none}
+.s1 .s1-box{width:100%;background:rgba(20,21,25,.6);border:1px solid rgba(255,255,255,.14);border-radius:15px;padding:14px 16px;font-size:14px;line-height:1.55;color:#fff;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);min-height:48px;transition:.15s}
+.s1 .s1-box:focus{border-color:var(--brand)}
+.s1 .s1-box[contenteditable]:empty:before{content:attr(data-ph);color:#9a9da2;font-weight:300}
+.s1 .s1-actions{width:100%;display:flex;justify-content:flex-end}
+.s1 .s1-btn.send{width:48px;flex:0 0 48px;border:0;border-radius:14px;background:var(--brand);color:#fff;font-size:17px;box-shadow:0 6px 18px rgba(192,58,43,.35);cursor:pointer}
+.s1 .s1-hint{text-align:center;font-size:10.5px;color:#9a9da2;letter-spacing:.04em}
+
+/* 立方体亮度差异化（体现 3D 空间感） */
+.cube-face.left,.cube-face.top{filter:brightness(.82)}
+.cube-face.bottom{filter:brightness(.62)}
+@media (prefers-reduced-motion:reduce){
+  .cube{animation:none}
+  .s1-prompt .prompt-mic{animation:none}
+  .holy-voice::before{animation:none}
+}

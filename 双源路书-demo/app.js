@@ -1170,6 +1170,9 @@ function renderPetSvg() {
   // 同步到大主页宠物
   const big = document.getElementById('petSvgBig');
   if (big) big.innerHTML = `<g>${body}${accentSvg}</g>`;
+  // 同步到圆形唤醒按钮
+  const btn = document.getElementById('petSvgBtn');
+  if (btn && !btn.dataset.fixed) btn.innerHTML = `<g>${body}${accentSvg}</g>`;
 }
 /* 颜色提亮/加深（生成肚皮浅色等） */
 function shade(hex, amt) {
@@ -1248,6 +1251,7 @@ function bindHardware() {
   renderPetSvg();
   syncPetFab();
   bindHardware();
+  initCubeScene();
   // 打开时按实时定位定城市（演示：这里模拟浏览器 geolocation）
   try {
     if (navigator.geolocation) {
@@ -1259,3 +1263,70 @@ function bindHardware() {
     }
   } catch (e) {}
 })();
+
+/* ============================================================
+   屏1 开场：3D 立方体液态粒子 + 城市标签轮换同步
+   ============================================================ */
+function initCubeScene() {
+  // 1) 同步宠物图标到圆形唤醒按钮（用当前宠物 SVG）
+  const btn = document.getElementById('petSvgBtn');
+  const svg = document.getElementById('petSvg');
+  if (btn && svg) {
+    btn.innerHTML = `<g>${svg.innerHTML}</g>`;
+  }
+
+  // 2) 立方体旋转 → 同步右上角城市标签（每 90° 换一个城市）
+  const cap = document.getElementById('cityHeroCap');
+  const cities = ['上海', '北京', '成都', '上海', '北京', '成都'];
+  const faces = ['front', 'right', 'back', 'left', 'front', 'back'];
+  const cube = document.getElementById('cube');
+  const labels = { front: '上海', back: '北京', right: '成都', left: '上海', top: '北京', bottom: '成都' };
+
+  // 用一个定时器按立方体旋转相位更新城市标签
+  let capIdx = 0;
+  setInterval(() => {
+    capIdx = (capIdx + 1) % 3;
+    if (cap) cap.textContent = labels[[ 'front','right','back','left','top','bottom' ][capIdx % 6]];
+  }, 6500); // 与 26s 立方体旋转的每面停留大致同步
+
+  // 3) 液态粒子 canvas（立方体表面流动的液态光点）
+  const cv = document.getElementById('cubeParticles');
+  if (!cv) return;
+  const ctx = cv.getContext('2d');
+  const scene = document.getElementById('cubeScene');
+  function size() { cv.width = scene.clientWidth; cv.height = scene.clientHeight; }
+  size();
+  window.addEventListener('resize', size);
+
+  const COLORS = [[192,58,43],[106,143,90],[224,138,74],[224,184,132]];
+  const parts = [];
+  const N = 34;
+  for (let i = 0; i < N; i++) {
+    parts.push({
+      x: Math.random(), y: Math.random(),
+      r: 1 + Math.random() * 2.2,
+      vx: (Math.random() - .5) * .0006, vy: -.0004 - Math.random() * .0005,
+      c: COLORS[i % COLORS.length],
+      tw: Math.random() * Math.PI * 2
+    });
+  }
+  function tick() {
+    const w = cv.width, h = cv.height;
+    ctx.clearRect(0, 0, w, h);
+    for (const p of parts) {
+      p.x += p.vx; p.y += p.vy; p.tw += .02;
+      if (p.y < -.05) { p.y = 1.05; p.x = Math.random(); }
+      if (p.x < -.05) p.x = 1.05; if (p.x > 1.05) p.x = -.05;
+      const px = p.x * w, py = p.y * h;
+      const a = .35 + Math.sin(p.tw) * .25;
+      const mr = p.r * (w / 400);
+      const g = ctx.createRadialGradient(px, py, 0, px, py, mr * 4);
+      g.addColorStop(0, `rgba(${p.c[0]},${p.c[1]},${p.c[2]},${a})`);
+      g.addColorStop(1, `rgba(${p.c[0]},${p.c[1]},${p.c[2]},0)`);
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(px, py, mr * 4, 0, Math.PI * 2); ctx.fill();
+    }
+    requestAnimationFrame(tick);
+  }
+  tick();
+}
