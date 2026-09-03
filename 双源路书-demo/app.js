@@ -1318,7 +1318,7 @@ function initCubeScene() {
       const w = gg.width, h = gg.height, t = (Date.now() - t0) / 1000;
       ctx2.clearRect(0, 0, w, h);
       // 透视网格：水平/垂直细线，中间有深度感
-      ctx2.strokeStyle = 'rgba(106,143,90,.10)'; ctx2.lineWidth = .6;
+      ctx2.strokeStyle = 'rgba(192,58,43,.10)'; ctx2.lineWidth = .6;
       const vps = 24;
       for (let i = 0; i <= vps; i++) {
         const x = (w / vps) * i;
@@ -1329,7 +1329,7 @@ function initCubeScene() {
         ctx2.beginPath(); ctx2.moveTo(0, y); ctx2.lineTo(w, y); ctx2.stroke();
       }
       // 数据流：沿网格向右流动的短线（科技数据感）
-      ctx2.strokeStyle = 'rgba(192,58,43,.35)'; ctx2.lineWidth = 1.4;
+      ctx2.strokeStyle = 'rgba(106,143,90,.4)'; ctx2.lineWidth = 1.4;
       for (let k = 0; k < 14; k++) {
         const row = (k % 16) * (h / 16) + 3;
         const speed = 60 + (k % 5) * 30;
@@ -1341,7 +1341,7 @@ function initCubeScene() {
         const px = ((t * 40 + m * 137) % (w * 1.4)) - w * 0.2;
         const py = (m % 16) * (h / 16) + 8;
         const a = .3 + .4 * Math.sin(t * 2 + m);
-        ctx2.fillStyle = `rgba(106,143,90,${a})`;
+        ctx2.fillStyle = `rgba(192,58,43,${a})`;
         ctx2.beginPath(); ctx2.arc(px, py, 1.8, 0, Math.PI * 2); ctx2.fill();
       }
       requestAnimationFrame(frame);
@@ -1357,7 +1357,7 @@ function initCubeScene() {
   size();
   window.addEventListener('resize', size);
 
-  const COLORS = [[192,58,43],[106,143,90],[224,138,74],[224,184,132]];
+  const COLORS = [[192,58,43],[106,143,90],[224,138,74],[222,170,120]];
   const parts = [];
   const N = 34;
   for (let i = 0; i < N; i++) {
